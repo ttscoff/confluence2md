@@ -9,7 +9,13 @@ This script is designed to run on a batch HTML export from Confluence to output 
 
 ## Usage
 
-Run the script from within the directory of a batch export of HTML files.
+Run in a folder full of HTML files, or pass a single HTML file as argument"
 
-Run with `-s` to strip Confluence-related metadata and fix H1 title.
+```console
+Usage: confluence_to_md.rb [OPTIONS] [FILE]
 
+Options:
+    -c, --clean                      Clear output directories before converting
+    -s, --strip-meta                 Strip Confluence metadata (default false)
+    -e, --[no-]strip-emoji           Strip emoji (default true
+```
