@@ -1,4 +1,13 @@
 confluence2md 1.0.2
+
+-------------------------
+
+#### FIXED
+
+- Remove unneccesary variable assignment
+- Page title was not properly removing parent title
+
+confluence2md 1.0.2
 -------------------------
 
 #### FIXED
