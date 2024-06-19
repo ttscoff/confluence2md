@@ -150,11 +150,12 @@ class ::String
 end
 
 class Confluence2MD
-  attr_writer :strip_meta, :strip_emoji
+  attr_writer :strip_meta, :strip_emoji, :clean_dirs
 
   def initialize
     @strip_meta = false
     @strip_emoji = true
+    @clean_dirs = false
   end
 
   ##
@@ -167,9 +168,11 @@ class Confluence2MD
   ## output, but I see that as the only way to make this work.
   ##
   def all_html
-    # Clear out previous runs, commented for now
-    # FileUtils.rm_f('stripped') if File.directory?('stripped')
-    # FileUtils.rm_f('markdown') if File.directory?('markdown')
+    if @clean_dirs
+      # Clear out previous runs
+      FileUtils.rm_f('stripped') if File.directory?('stripped')
+      FileUtils.rm_f('markdown') if File.directory?('markdown')
+    end
     FileUtils.mkdir_p('stripped')
     FileUtils.mkdir_p('markdown/images')
 
@@ -233,7 +236,8 @@ end
 
 options = {
   strip_meta: false,
-  strip_emoji: true
+  strip_emoji: true,
+  clean_dirs: false
 }
 
 opt_parser = OptionParser.new do |opt|
@@ -243,6 +247,10 @@ opt_parser = OptionParser.new do |opt|
   EOBANNER
   opt.separator  ''
   opt.separator  'Options:'
+
+  opt.on('-c', '--clean', 'Clear output directories before converting') do
+    options[:clean_dirs] = true
+  end
 
   opt.on('-s', '--strip-meta', 'Strip Confluence metadata (default false)') do
     options[:strip_meta] = true
@@ -258,6 +266,7 @@ opt_parser.parse!
 c2m = Confluence2MD.new
 c2m.strip_meta = options[:strip_meta]
 c2m.strip_emoji = options[:strip_emoji]
+c2m.clean_dirs = options[:clean_dirs]
 
 # If a single file is passed as an argument, process just that file
 if ARGV.count.positive?
