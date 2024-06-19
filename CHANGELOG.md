@@ -1,5 +1,4 @@
 confluence2md 1.0.3
-
 -------------------------
 
 #### NEW
@@ -7,7 +6,6 @@ confluence2md 1.0.3
 - `--source` flag will include an HTML comment showing the original
 
 confluence2md 1.0.2
-
 -------------------------
 
 #### IMPROVED
@@ -18,48 +16,6 @@ confluence2md 1.0.2
 
 - Remove unneccesary variable assignment
 - Page title was not properly removing parent title
-
-confluence2md 1.0.2
-
--------------------------
-
-#### IMPROVED
-
-- Convert embedded images (which can't be retrieved) to
-
-#### FIXED
-
-- Remove unneccesary variable assignment
-- Page title was not properly removing parent title
-
-confluence2md 1.0.2
-
--------------------------
-
-#### IMPROVED
-
-- Convert embedded images (which can't be retrieved) to
-
-#### FIXED
-
-- Remove unneccesary variable assignment
-- Page title was not properly removing parent title
-
-confluence2md 1.0.2
-
--------------------------
-
-#### FIXED
-
-- Remove unneccesary variable assignment
-- Page title was not properly removing parent title
-
-confluence2md 1.0.2
--------------------------
-
-#### FIXED
-
-- Remove unneccesary variable assignment
 
 confluence2md 1.0.1
 -------------------------
