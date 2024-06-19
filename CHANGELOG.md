@@ -2,6 +2,45 @@ confluence2md 1.0.2
 
 -------------------------
 
+#### IMPROVED
+
+- Convert embedded images (which can't be retrieved) to `%image: FILENAME` syntax for possible replacement in the future
+
+#### FIXED
+
+- Remove unneccesary variable assignment
+- Page title was not properly removing parent title
+
+confluence2md 1.0.2
+
+-------------------------
+
+#### IMPROVED
+
+- Convert embedded images (which can't be retrieved) to
+
+#### FIXED
+
+- Remove unneccesary variable assignment
+- Page title was not properly removing parent title
+
+confluence2md 1.0.2
+
+-------------------------
+
+#### IMPROVED
+
+- Convert embedded images (which can't be retrieved) to
+
+#### FIXED
+
+- Remove unneccesary variable assignment
+- Page title was not properly removing parent title
+
+confluence2md 1.0.2
+
+-------------------------
+
 #### FIXED
 
 - Remove unneccesary variable assignment
