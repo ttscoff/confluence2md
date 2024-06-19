@@ -1,0 +1,821 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>
+  Class: Confluence2MD
+  
+    &mdash; Documentation by YARD 0.9.36
+  
+</title>
+
+  <link rel="stylesheet" href="css/style.css" type="text/css" />
+
+  <link rel="stylesheet" href="css/common.css" type="text/css" />
+
+<script type="text/javascript">
+  pathId = "Confluence2MD";
+  relpath = '';
+</script>
+
+
+  <script type="text/javascript" charset="utf-8" src="js/jquery.js"></script>
+
+  <script type="text/javascript" charset="utf-8" src="js/app.js"></script>
+
+
+  </head>
+  <body>
+    <div class="nav_wrap">
+      <iframe id="nav" src="class_list.html?1"></iframe>
+      <div id="resizer"></div>
+    </div>
+
+    <div id="main" tabindex="-1">
+      <div id="header">
+        <div id="menu">
+  
+    <a href="_index.html">Index (C)</a> &raquo;
+    
+    
+    <span class="title">Confluence2MD</span>
+  
+</div>
+
+        <div id="search">
+  
+    <a class="full_list_link" id="class_list_link"
+        href="class_list.html">
+
+        <svg width="24" height="24">
+          <rect x="0" y="4" width="24" height="4" rx="1" ry="1"></rect>
+          <rect x="0" y="12" width="24" height="4" rx="1" ry="1"></rect>
+          <rect x="0" y="20" width="24" height="4" rx="1" ry="1"></rect>
+        </svg>
+    </a>
+  
+</div>
+        <div class="clear"></div>
+      </div>
+
+      <div id="content"><h1>Class: Confluence2MD
+  
+  
+  
+</h1>
+<div class="box_info">
+  
+  <dl>
+    <dt>Inherits:</dt>
+    <dd>
+      <span class="inheritName">Object</span>
+      
+        <ul class="fullTree">
+          <li>Object</li>
+          
+            <li class="next">Confluence2MD</li>
+          
+        </ul>
+        <a href="#" class="inheritanceTree">show all</a>
+      
+    </dd>
+  </dl>
+  
+
+  
+  
+  
+  
+  
+
+  
+
+  
+  <dl>
+    <dt>Defined in:</dt>
+    <dd>confluence_to_md.rb</dd>
+  </dl>
+  
+</div>
+
+
+
+
+
+  <h2>Instance Attribute Summary <small><a href="#" class="summary_toggle">collapse</a></small></h2>
+  <ul class="summary">
+    
+      <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#clean_dirs=-instance_method" title="#clean_dirs= (instance method)">#<strong>clean_dirs</strong>  &#x21d2; Object </a>
+    
+
+    
+  </span>
+  
+  
+  
+    
+    
+      <span class="note title writeonly">writeonly</span>
+    
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'><p>Sets the attribute clean_dirs.</p>
+</div></span>
+  
+</li>
+
+    
+      <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#strip_emoji=-instance_method" title="#strip_emoji= (instance method)">#<strong>strip_emoji</strong>  &#x21d2; Object </a>
+    
+
+    
+  </span>
+  
+  
+  
+    
+    
+      <span class="note title writeonly">writeonly</span>
+    
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'><p>Sets the attribute strip_emoji.</p>
+</div></span>
+  
+</li>
+
+    
+      <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#strip_meta=-instance_method" title="#strip_meta= (instance method)">#<strong>strip_meta</strong>  &#x21d2; Object </a>
+    
+
+    
+  </span>
+  
+  
+  
+    
+    
+      <span class="note title writeonly">writeonly</span>
+    
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'><p>Sets the attribute strip_meta.</p>
+</div></span>
+  
+</li>
+
+    
+  </ul>
+
+
+
+
+  
+    <h2>
+      Instance Method Summary
+      <small><a href="#" class="summary_toggle">collapse</a></small>
+    </h2>
+
+    <ul class="summary">
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#all_html-instance_method" title="#all_html (instance method)">#<strong>all_html</strong>  &#x21d2; Object </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'><p>Convert all HTML files in current directory to Markdown.</p>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#handle_stdin-instance_method" title="#handle_stdin (instance method)">#<strong>handle_stdin</strong>(input)  &#x21d2; String </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'><p>Handle input from pipe and convert to Markdown.</p>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#initialize-instance_method" title="#initialize (instance method)">#<strong>initialize</strong>  &#x21d2; Confluence2MD </a>
+    
+
+    
+  </span>
+  
+  
+    <span class="note title constructor">constructor</span>
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'><p>A new instance of Confluence2MD.</p>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#single_file-instance_method" title="#single_file (instance method)">#<strong>single_file</strong>(html)  &#x21d2; Object </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'><p>Convert a single HTML file passed by path on the command line.</p>
+</div></span>
+  
+</li>
+
+      
+    </ul>
+  
+
+<div id="constructor_details" class="method_details_list">
+  <h2>Constructor Details</h2>
+  
+    <div class="method_details first">
+  <h3 class="signature first" id="initialize-instance_method">
+  
+    #<strong>initialize</strong>  &#x21d2; <tt><span class='object_link'><a href="" title="Confluence2MD (class)">Confluence2MD</a></span></tt> 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    <p>Returns a new instance of Confluence2MD.</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+155
+156
+157
+158
+159</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'confluence_to_md.rb', line 155</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_initialize'>initialize</span>
+  <span class='ivar'>@strip_meta</span> <span class='op'>=</span> <span class='kw'>false</span>
+  <span class='ivar'>@strip_emoji</span> <span class='op'>=</span> <span class='kw'>true</span>
+  <span class='ivar'>@clean_dirs</span> <span class='op'>=</span> <span class='kw'>false</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+  
+</div>
+
+  <div id="instance_attr_details" class="attr_details">
+    <h2>Instance Attribute Details</h2>
+    
+      
+      <span id=""></span>
+      <div class="method_details first">
+  <h3 class="signature first" id="clean_dirs=-instance_method">
+  
+    #<strong>clean_dirs=</strong>(value)  &#x21d2; <tt>Object</tt>  <span class="extras">(writeonly)</span>
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    <p>Sets the attribute clean_dirs</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  <p class="tag_title">Parameters:</p>
+<ul class="param">
+  
+    <li>
+      
+        <span class='name'>value</span>
+      
+      
+        <span class='type'></span>
+      
+      
+      
+        &mdash;
+        <div class='inline'><p>the value to set the attribute clean_dirs to.</p>
+</div>
+      
+    </li>
+  
+</ul>
+
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+153
+154
+155</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'confluence_to_md.rb', line 153</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_clean_dirs='>clean_dirs=</span><span class='lparen'>(</span><span class='id identifier rubyid_value'>value</span><span class='rparen'>)</span>
+  <span class='ivar'>@clean_dirs</span> <span class='op'>=</span> <span class='id identifier rubyid_value'>value</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      
+      <span id=""></span>
+      <div class="method_details ">
+  <h3 class="signature " id="strip_emoji=-instance_method">
+  
+    #<strong>strip_emoji=</strong>(value)  &#x21d2; <tt>Object</tt>  <span class="extras">(writeonly)</span>
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    <p>Sets the attribute strip_emoji</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  <p class="tag_title">Parameters:</p>
+<ul class="param">
+  
+    <li>
+      
+        <span class='name'>value</span>
+      
+      
+        <span class='type'></span>
+      
+      
+      
+        &mdash;
+        <div class='inline'><p>the value to set the attribute strip_emoji to.</p>
+</div>
+      
+    </li>
+  
+</ul>
+
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+153
+154
+155</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'confluence_to_md.rb', line 153</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_strip_emoji='>strip_emoji=</span><span class='lparen'>(</span><span class='id identifier rubyid_value'>value</span><span class='rparen'>)</span>
+  <span class='ivar'>@strip_emoji</span> <span class='op'>=</span> <span class='id identifier rubyid_value'>value</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      
+      <span id=""></span>
+      <div class="method_details ">
+  <h3 class="signature " id="strip_meta=-instance_method">
+  
+    #<strong>strip_meta=</strong>(value)  &#x21d2; <tt>Object</tt>  <span class="extras">(writeonly)</span>
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    <p>Sets the attribute strip_meta</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  <p class="tag_title">Parameters:</p>
+<ul class="param">
+  
+    <li>
+      
+        <span class='name'>value</span>
+      
+      
+        <span class='type'></span>
+      
+      
+      
+        &mdash;
+        <div class='inline'><p>the value to set the attribute strip_meta to.</p>
+</div>
+      
+    </li>
+  
+</ul>
+
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+153
+154
+155</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'confluence_to_md.rb', line 153</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_strip_meta='>strip_meta=</span><span class='lparen'>(</span><span class='id identifier rubyid_value'>value</span><span class='rparen'>)</span>
+  <span class='ivar'>@strip_meta</span> <span class='op'>=</span> <span class='id identifier rubyid_value'>value</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+  </div>
+
+
+  <div id="instance_method_details" class="method_details_list">
+    <h2>Instance Method Details</h2>
+
+    
+      <div class="method_details first">
+  <h3 class="signature first" id="all_html-instance_method">
+  
+    #<strong>all_html</strong>  &#x21d2; <tt>Object</tt> 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    <p>Convert all HTML files in current directory to Markdown. Creates
+directories for stripped HTML and markdown output, with subdirectory for
+extracted images.</p>
+
+<p>Currently fails to extract images because they&#39;re behind authentication.
+I&#39;m not sure if Confluence is able to include attached images in HTML
+output, but I see that as the only way to make this work.</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+170
+171
+172
+173
+174
+175
+176
+177
+178
+179
+180
+181
+182
+183
+184
+185
+186
+187
+188
+189
+190
+191
+192
+193
+194
+195
+196
+197
+198
+199
+200
+201</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'confluence_to_md.rb', line 170</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_all_html'>all_html</span>
+  <span class='kw'>if</span> <span class='ivar'>@clean_dirs</span>
+    <span class='comment'># Clear out previous runs
+</span>    <span class='const'>FileUtils</span><span class='period'>.</span><span class='id identifier rubyid_rm_f'>rm_f</span><span class='lparen'>(</span><span class='tstring'><span class='tstring_beg'>&#39;</span><span class='tstring_content'>stripped</span><span class='tstring_end'>&#39;</span></span><span class='rparen'>)</span> <span class='kw'>if</span> <span class='const'>File</span><span class='period'>.</span><span class='id identifier rubyid_directory?'>directory?</span><span class='lparen'>(</span><span class='tstring'><span class='tstring_beg'>&#39;</span><span class='tstring_content'>stripped</span><span class='tstring_end'>&#39;</span></span><span class='rparen'>)</span>
+    <span class='const'>FileUtils</span><span class='period'>.</span><span class='id identifier rubyid_rm_f'>rm_f</span><span class='lparen'>(</span><span class='tstring'><span class='tstring_beg'>&#39;</span><span class='tstring_content'>markdown</span><span class='tstring_end'>&#39;</span></span><span class='rparen'>)</span> <span class='kw'>if</span> <span class='const'>File</span><span class='period'>.</span><span class='id identifier rubyid_directory?'>directory?</span><span class='lparen'>(</span><span class='tstring'><span class='tstring_beg'>&#39;</span><span class='tstring_content'>markdown</span><span class='tstring_end'>&#39;</span></span><span class='rparen'>)</span>
+  <span class='kw'>end</span>
+  <span class='const'>FileUtils</span><span class='period'>.</span><span class='id identifier rubyid_mkdir_p'>mkdir_p</span><span class='lparen'>(</span><span class='tstring'><span class='tstring_beg'>&#39;</span><span class='tstring_content'>stripped</span><span class='tstring_end'>&#39;</span></span><span class='rparen'>)</span>
+  <span class='const'>FileUtils</span><span class='period'>.</span><span class='id identifier rubyid_mkdir_p'>mkdir_p</span><span class='lparen'>(</span><span class='tstring'><span class='tstring_beg'>&#39;</span><span class='tstring_content'>markdown/images</span><span class='tstring_end'>&#39;</span></span><span class='rparen'>)</span>
+
+  <span class='const'>Dir</span><span class='period'>.</span><span class='id identifier rubyid_glob'>glob</span><span class='lparen'>(</span><span class='tstring'><span class='tstring_beg'>&#39;</span><span class='tstring_content'>*.html</span><span class='tstring_end'>&#39;</span></span><span class='rparen'>)</span> <span class='kw'>do</span> <span class='op'>|</span><span class='id identifier rubyid_html'>html</span><span class='op'>|</span>
+    <span class='id identifier rubyid_content'>content</span> <span class='op'>=</span> <span class='const'>IO</span><span class='period'>.</span><span class='id identifier rubyid_read'>read</span><span class='lparen'>(</span><span class='id identifier rubyid_html'>html</span><span class='rparen'>)</span>
+    <span class='id identifier rubyid_basename'>basename</span> <span class='op'>=</span> <span class='const'>File</span><span class='period'>.</span><span class='id identifier rubyid_basename'>basename</span><span class='lparen'>(</span><span class='id identifier rubyid_html'>html</span><span class='comma'>,</span> <span class='tstring'><span class='tstring_beg'>&#39;</span><span class='tstring_content'>.html</span><span class='tstring_end'>&#39;</span></span><span class='rparen'>)</span>
+    <span class='id identifier rubyid_stripped'>stripped</span> <span class='op'>=</span> <span class='const'>File</span><span class='period'>.</span><span class='id identifier rubyid_join'>join</span><span class='lparen'>(</span><span class='tstring'><span class='tstring_beg'>&#39;</span><span class='tstring_content'>stripped</span><span class='tstring_end'>&#39;</span></span><span class='comma'>,</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_basename'>basename</span><span class='embexpr_end'>}</span><span class='tstring_content'>.html</span><span class='tstring_end'>&quot;</span></span><span class='rparen'>)</span>
+
+    <span class='id identifier rubyid_title'>title</span> <span class='op'>=</span> <span class='id identifier rubyid_content'>content</span><span class='period'>.</span><span class='id identifier rubyid_match'>match</span><span class='lparen'>(</span><span class='tstring'><span class='regexp_beg'>%r{</span><span class='tstring_content'>&lt;title&gt;(.*?)&lt;/title&gt;</span><span class='regexp_end'>}m</span></span><span class='rparen'>)</span><span class='lbracket'>[</span><span class='int'>1</span><span class='rbracket'>]</span><span class='period'>.</span><span class='id identifier rubyid_sub'>sub</span><span class='lparen'>(</span><span class='tstring'><span class='regexp_beg'>/</span><span class='tstring_content'>^.*? : </span><span class='regexp_end'>/</span></span><span class='comma'>,</span> <span class='tstring'><span class='tstring_beg'>&#39;</span><span class='tstring_end'>&#39;</span></span><span class='rparen'>)</span><span class='period'>.</span><span class='id identifier rubyid_sub'>sub</span><span class='lparen'>(</span><span class='tstring'><span class='regexp_beg'>/</span><span class='tstring_content'>👓</span><span class='regexp_end'>/</span></span><span class='comma'>,</span> <span class='tstring'><span class='tstring_beg'>&#39;</span><span class='tstring_end'>&#39;</span></span><span class='rparen'>)</span><span class='period'>.</span><span class='id identifier rubyid_sub'>sub</span><span class='lparen'>(</span><span class='tstring'><span class='regexp_beg'>/</span><span class='tstring_content'>copy of </span><span class='regexp_end'>/i</span></span><span class='comma'>,</span> <span class='tstring'><span class='tstring_beg'>&#39;</span><span class='tstring_end'>&#39;</span></span><span class='rparen'>)</span>
+
+    <span class='id identifier rubyid_markdown'>markdown</span> <span class='op'>=</span> <span class='const'>File</span><span class='period'>.</span><span class='id identifier rubyid_join'>join</span><span class='lparen'>(</span><span class='tstring'><span class='tstring_beg'>&#39;</span><span class='tstring_content'>markdown</span><span class='tstring_end'>&#39;</span></span><span class='comma'>,</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_title'>title</span><span class='period'>.</span><span class='id identifier rubyid_slugify'>slugify</span><span class='embexpr_end'>}</span><span class='tstring_content'>.md</span><span class='tstring_end'>&quot;</span></span><span class='rparen'>)</span>
+
+    <span class='id identifier rubyid_content'>content</span> <span class='op'>=</span> <span class='id identifier rubyid_content'>content</span><span class='period'>.</span><span class='id identifier rubyid_strip_meta'>strip_meta</span> <span class='kw'>if</span> <span class='ivar'>@strip_meta</span>
+    <span class='id identifier rubyid_content'>content</span> <span class='op'>=</span> <span class='id identifier rubyid_content'>content</span><span class='period'>.</span><span class='id identifier rubyid_cleanup'>cleanup</span>
+    <span class='id identifier rubyid_content'>content</span> <span class='op'>=</span> <span class='id identifier rubyid_content'>content</span><span class='period'>.</span><span class='id identifier rubyid_strip_emoji'>strip_emoji</span> <span class='kw'>if</span> <span class='ivar'>@strip_emoji</span>
+
+    <span class='const'>File</span><span class='period'>.</span><span class='id identifier rubyid_open'>open</span><span class='lparen'>(</span><span class='id identifier rubyid_stripped'>stripped</span><span class='comma'>,</span> <span class='tstring'><span class='tstring_beg'>&#39;</span><span class='tstring_content'>w</span><span class='tstring_end'>&#39;</span></span><span class='rparen'>)</span> <span class='lbrace'>{</span> <span class='op'>|</span><span class='id identifier rubyid_f'>f</span><span class='op'>|</span> <span class='id identifier rubyid_f'>f</span><span class='period'>.</span><span class='id identifier rubyid_puts'>puts</span> <span class='id identifier rubyid_content'>content</span> <span class='rbrace'>}</span>
+
+    <span class='id identifier rubyid_res'>res</span> <span class='op'>=</span> <span class='backtick'>`</span><span class='tstring_content'>pandoc --wrap=none --extract-media markdown/images -f html -t markdown_strict+rebase_relative_paths &quot;</span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_stripped'>stripped</span><span class='embexpr_end'>}</span><span class='tstring_content'>&quot;</span><span class='tstring_end'>`</span></span>
+    <span class='id identifier rubyid_warn'>warn</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_html'>html</span><span class='embexpr_end'>}</span><span class='tstring_content'> =&gt; </span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_markdown'>markdown</span><span class='embexpr_end'>}</span><span class='tstring_end'>&quot;</span></span>
+
+    <span class='id identifier rubyid_res'>res</span><span class='period'>.</span><span class='id identifier rubyid_relative_paths!'>relative_paths!</span>
+    <span class='id identifier rubyid_res'>res</span><span class='period'>.</span><span class='id identifier rubyid_strip_comments!'>strip_comments!</span>
+    <span class='const'>File</span><span class='period'>.</span><span class='id identifier rubyid_open'>open</span><span class='lparen'>(</span><span class='id identifier rubyid_markdown'>markdown</span><span class='comma'>,</span> <span class='tstring'><span class='tstring_beg'>&#39;</span><span class='tstring_content'>w</span><span class='tstring_end'>&#39;</span></span><span class='rparen'>)</span> <span class='lbrace'>{</span> <span class='op'>|</span><span class='id identifier rubyid_f'>f</span><span class='op'>|</span> <span class='id identifier rubyid_f'>f</span><span class='period'>.</span><span class='id identifier rubyid_puts'>puts</span> <span class='id identifier rubyid_res'>res</span> <span class='rbrace'>}</span>
+  <span class='kw'>end</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="handle_stdin-instance_method">
+  
+    #<strong>handle_stdin</strong>(input)  &#x21d2; <tt><span class='object_link'><a href="String.html" title="String (class)">String</a></span></tt> 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    <p>Handle input from pipe and convert to Markdown</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  <p class="tag_title">Parameters:</p>
+<ul class="param">
+  
+    <li>
+      
+        <span class='name'>input</span>
+      
+      
+        <span class='type'>(<tt><span class='object_link'><a href="String.html" title="String (class)">String</a></span></tt>)</span>
+      
+      
+      
+        &mdash;
+        <div class='inline'><p>The HTML input</p>
+</div>
+      
+    </li>
+  
+</ul>
+
+<p class="tag_title">Returns:</p>
+<ul class="return">
+  
+    <li>
+      
+      
+        <span class='type'>(<tt><span class='object_link'><a href="String.html" title="String (class)">String</a></span></tt>)</span>
+      
+      
+      
+        &mdash;
+        <div class='inline'><p>Markdown output</p>
+</div>
+      
+    </li>
+  
+</ul>
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+227
+228
+229
+230
+231
+232
+233
+234</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'confluence_to_md.rb', line 227</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_handle_stdin'>handle_stdin</span><span class='lparen'>(</span><span class='id identifier rubyid_input'>input</span><span class='rparen'>)</span>
+  <span class='id identifier rubyid_input'>input</span> <span class='op'>=</span> <span class='id identifier rubyid_input'>input</span><span class='period'>.</span><span class='id identifier rubyid_strip_meta'>strip_meta</span> <span class='kw'>if</span> <span class='ivar'>@strip_meta</span>
+  <span class='id identifier rubyid_input'>input</span> <span class='op'>=</span> <span class='id identifier rubyid_input'>input</span><span class='period'>.</span><span class='id identifier rubyid_cleanup'>cleanup</span>
+  <span class='id identifier rubyid_input'>input</span> <span class='op'>=</span> <span class='id identifier rubyid_input'>input</span><span class='period'>.</span><span class='id identifier rubyid_strip_emoji'>strip_emoji</span> <span class='kw'>if</span> <span class='ivar'>@strip_emoji</span>
+
+  <span class='id identifier rubyid_res'>res</span> <span class='op'>=</span> <span class='backtick'>`</span><span class='tstring_content'>echo </span><span class='embexpr_beg'>#{</span><span class='const'>Shellwords</span><span class='period'>.</span><span class='id identifier rubyid_escape'>escape</span><span class='lparen'>(</span><span class='id identifier rubyid_input'>input</span><span class='rparen'>)</span><span class='embexpr_end'>}</span><span class='tstring_content'> | pandoc --wrap=none --extract-media images -f html -t markdown_strict+rebase_relative_paths</span><span class='tstring_end'>`</span></span>
+  <span class='id identifier rubyid_res'>res</span><span class='period'>.</span><span class='id identifier rubyid_relative_paths'>relative_paths</span><span class='period'>.</span><span class='id identifier rubyid_strip_comments'>strip_comments</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="single_file-instance_method">
+  
+    #<strong>single_file</strong>(html)  &#x21d2; <tt>Object</tt> 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    <p>Convert a single HTML file passed by path on the command line. Returns
+Markdown result as string for output to STDOUT.</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  <p class="tag_title">Parameters:</p>
+<ul class="param">
+  
+    <li>
+      
+        <span class='name'>The</span>
+      
+      
+        <span class='type'>(<tt><span class='object_link'><a href="String.html" title="String (class)">String</a></span></tt>)</span>
+      
+      
+      
+        &mdash;
+        <div class='inline'><p>Markdown result</p>
+</div>
+      
+    </li>
+  
+</ul>
+
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+209
+210
+211
+212
+213
+214
+215
+216
+217
+218</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'confluence_to_md.rb', line 209</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_single_file'>single_file</span><span class='lparen'>(</span><span class='id identifier rubyid_html'>html</span><span class='rparen'>)</span>
+  <span class='id identifier rubyid_content'>content</span> <span class='op'>=</span> <span class='const'>IO</span><span class='period'>.</span><span class='id identifier rubyid_read'>read</span><span class='lparen'>(</span><span class='id identifier rubyid_html'>html</span><span class='rparen'>)</span>
+
+  <span class='id identifier rubyid_content'>content</span> <span class='op'>=</span> <span class='id identifier rubyid_content'>content</span><span class='period'>.</span><span class='id identifier rubyid_strip_meta'>strip_meta</span> <span class='kw'>if</span> <span class='ivar'>@strip_meta</span>
+  <span class='id identifier rubyid_content'>content</span> <span class='op'>=</span> <span class='id identifier rubyid_content'>content</span><span class='period'>.</span><span class='id identifier rubyid_cleanup'>cleanup</span>
+  <span class='id identifier rubyid_content'>content</span> <span class='op'>=</span> <span class='id identifier rubyid_content'>content</span><span class='period'>.</span><span class='id identifier rubyid_strip_emoji'>strip_emoji</span> <span class='kw'>if</span> <span class='ivar'>@strip_emoji</span>
+
+  <span class='id identifier rubyid_res'>res</span> <span class='op'>=</span> <span class='backtick'>`</span><span class='tstring_content'>echo </span><span class='embexpr_beg'>#{</span><span class='const'>Shellwords</span><span class='period'>.</span><span class='id identifier rubyid_escape'>escape</span><span class='lparen'>(</span><span class='id identifier rubyid_content'>content</span><span class='rparen'>)</span><span class='embexpr_end'>}</span><span class='tstring_content'> | pandoc --wrap=none --extract-media images -f html -t markdown_strict+rebase_relative_paths</span><span class='tstring_end'>`</span></span>
+  <span class='id identifier rubyid_res'>res</span><span class='period'>.</span><span class='id identifier rubyid_relative_paths'>relative_paths</span><span class='period'>.</span><span class='id identifier rubyid_strip_comments'>strip_comments</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+  </div>
+
+</div>
+
+      <div id="footer">
+  Generated on Wed Jun 19 11:17:16 2024 by
+  <a href="https://yardoc.org" title="Yay! A Ruby Documentation Tool" target="_parent">yard</a>
+  0.9.36 (ruby-3.0.1).
+</div>
+
+    </div>
+  </body>
+</html>
