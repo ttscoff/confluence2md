@@ -100,6 +100,7 @@ class ::String
     content.gsub!(%r{</?span.*?>}m, '')
     content.gsub!(/<(a href=".*?").*?>/, '<\1>')
     content.gsub!(/<img class="icon".*?>/m, '')
+    content.gsub!(%r{<img.*class="confluence-embedded-image".*title="(.*?)">}m, "\n%image: \\1\n")
     content.gsub!(%r{<img.*? src="(.*?)".*?/?>}m, '<img src="\1">')
     content.gsub!(%r{<img.*? data-src="(.*?)".*?/?>}m, '<img src="\1">')
     content.gsub!(/ class="confluenceTd" /, '')
@@ -151,12 +152,13 @@ class ::String
 end
 
 class Confluence2MD
-  attr_writer :strip_meta, :strip_emoji, :clean_dirs
+  attr_writer :strip_meta, :strip_emoji, :clean_dirs, :include_source
 
   def initialize
     @strip_meta = false
     @strip_emoji = true
     @clean_dirs = false
+    @include_source = false
   end
 
   ##
@@ -197,6 +199,7 @@ class Confluence2MD
 
       res.relative_paths!
       res.strip_comments!
+      res = "#{res}\n\n<!--Source: #{html}-->\n" if @include_source
       File.open(markdown, 'w') { |f| f.puts res }
     end
   end
@@ -215,6 +218,7 @@ class Confluence2MD
     content = content.strip_emoji if @strip_emoji
 
     res = `echo #{Shellwords.escape(content)} | pandoc --wrap=none --extract-media images -f html -t markdown_strict+rebase_relative_paths`
+    res = "#{res}\n\n<!--Source: #{html}-->\n" if @include_source
     res.relative_paths.strip_comments
   end
 
@@ -238,7 +242,8 @@ end
 options = {
   strip_meta: false,
   strip_emoji: true,
-  clean_dirs: false
+  clean_dirs: false,
+  source: false
 }
 
 opt_parser = OptionParser.new do |opt|
@@ -260,6 +265,10 @@ opt_parser = OptionParser.new do |opt|
   opt.on('-e', '--[no-]strip-emoji', 'Strip emoji (default true') do |opt|
     options[:strip_emoji] = opt
   end
+
+  opt.on('--[no-]source', 'Include an HTML comment with name of original HTML file') do |opt|
+    options[:source] = opt
+  end
 end
 
 opt_parser.parse!
@@ -268,6 +277,7 @@ c2m = Confluence2MD.new
 c2m.strip_meta = options[:strip_meta]
 c2m.strip_emoji = options[:strip_emoji]
 c2m.clean_dirs = options[:clean_dirs]
+c2m.include_source = options[:source]
 
 # If a single file is passed as an argument, process just that file
 if ARGV.count.positive?
