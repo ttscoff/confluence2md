@@ -25,7 +25,7 @@ class ::String
   ##
   ## @return     [String] string with emojis stripped
   ##
-  def strip_emojis
+  def strip_emoji
     text = dup.force_encoding('utf-8').encode
 
     # symbols & pics
