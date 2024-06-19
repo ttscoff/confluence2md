@@ -11,10 +11,20 @@ require 'optparse'
 
 # string helpers
 class ::String
+  ##
+  ## Convert a string to hyphenated slug
+  ##
+  ## @return     [String] slug version
+  ##
   def slugify
     downcase.gsub(/[^a-z0-9]/, '-').gsub(/-+/, '-').gsub(/(^-|-$)/, '')
   end
 
+  ##
+  ## Remove emojis from output
+  ##
+  ## @return     [String] string with emojis stripped
+  ##
   def strip_emojis
     text = dup.force_encoding('utf-8').encode
 
@@ -35,6 +45,21 @@ class ::String
     clean.gsub(regex, '')
   end
 
+  ##
+  ## Destructive version of #strip_emoji
+  ## @see        #strip_emoji
+  ##
+  ## @return     [String] string with emoji stripped
+  ##
+  def strip_emoji!
+    replace strip_emoji
+  end
+
+  ##
+  ## Strips out Confluence detritus like TOC and author metadata
+  ##
+  ## @return     [String] string with metadata cleaned out
+  ##
   def strip_meta
     content = dup
     content.sub!(%r{<style.*?>.*?</style>}m, '')
@@ -60,6 +85,13 @@ class ::String
     content
   end
 
+  ##
+  ## Clean up HTML before Markdown conversion. Removes block elements
+  ## (div/section) and inline elements (span), fixes links and images, removes
+  ## zero-width spaces
+  ##
+  ## @return     [String] cleaned up HTML string
+  ##
   def cleanup
     content = dup
     content.gsub!(%r{</?div.*?>}m, '')
@@ -74,35 +106,70 @@ class ::String
     content.gsub!(/\u00A0/, ' ')
     content.gsub!(%r{<span> *</span>}, ' ')
     content.gsub!(/■/, '')
-    content.strip_emojis
+    content
   end
 
+  ##
+  ## Change image paths to correct relative path
+  ##
+  ## @return     [String] image paths replaced
+  ##
   def relative_paths
     gsub(%r{markdown/images/}, 'images/')
   end
 
+  ##
+  ## Destructive version of #relative_paths
+  ## @see        #relative_paths
+  ##
+  ## @return     [String] image paths replaced
+  ##
   def relative_paths!
     replace relative_paths
   end
 
+  ##
+  ## Comment/span stripping
+  ##
+  ## @return     [String] comments stripped
+  ##
   def strip_comments
-    # Remove empty comments
+    # Remove empty comments and spans
     gsub(/\n+ *<!-- *-->\n/, '').gsub(%r{</?span.*?>}m, '')
   end
 
+  ##
+  ## Destructive comment/span strip
+  ## @see        #strip_comments
+  ##
+  ## @return     [String] comments stripped
+  ##
   def strip_comments!
     replace strip_comments
   end
 end
 
 class Confluence2MD
-  attr_writer :strip_meta
+  attr_writer :strip_meta, :strip_emoji
 
   def initialize
     @strip_meta = false
+    @strip_emoji = true
   end
 
+  ##
+  ## Convert all HTML files in current directory to Markdown. Creates
+  ## directories for stripped HTML and markdown output, with subdirectory for
+  ## extracted images.
+  ##
+  ## Currently fails to extract images because they're behind authentication.
+  ## I'm not sure if Confluence is able to include attached images in HTML
+  ## output, but I see that as the only way to make this work.
+  ##
   def all_html
+    # Clear out previous runs, commented for now
+    # FileUtils.rm_f('stripped') if File.directory?('stripped')
+    # FileUtils.rm_f('markdown') if File.directory?('markdown')
     FileUtils.mkdir_p('stripped')
     FileUtils.mkdir_p('markdown/images')
 
@@ -117,6 +184,7 @@ class Confluence2MD
 
       content = content.strip_meta if @strip_meta
       content = content.cleanup
+      content = content.strip_emoji if @strip_emoji
 
       File.open(stripped, 'w') { |f| f.puts content }
 
@@ -129,26 +197,43 @@ class Confluence2MD
     end
   end
 
+  ##
+  ## Convert a single HTML file passed by path on the command line. Returns
+  ## Markdown result as string for output to STDOUT.
+  ##
+  ## @param      [String]  The Markdown result
+  ##
   def single_file(html)
     content = IO.read(html)
 
     content = content.strip_meta if @strip_meta
     content = content.cleanup
+    content = content.strip_emoji if @strip_emoji
 
     res = `echo #{Shellwords.escape(content)} | pandoc --wrap=none --extract-media images -f html -t markdown_strict+rebase_relative_paths`
     res.relative_paths.strip_comments
   end
 
+  ##
+  ## Handle input from pipe and convert to Markdown
+  ##
+  ## @param      input  [String] The HTML input
+  ##
+  ## @return     [String] Markdown output
+  ##
   def handle_stdin(input)
     input = input.strip_meta if @strip_meta
     input = input.cleanup
+    input = input.strip_emoji if @strip_emoji
+
     res = `echo #{Shellwords.escape(input)} | pandoc --wrap=none --extract-media images -f html -t markdown_strict+rebase_relative_paths`
     res.relative_paths.strip_comments
   end
 end
 
 options = {
-  strip_meta: false
+  strip_meta: false,
+  strip_emoji: true
 }
 
 opt_parser = OptionParser.new do |opt|
@@ -159,8 +244,12 @@ opt_parser = OptionParser.new do |opt|
   opt.separator  ''
   opt.separator  'Options:'
 
-  opt.on('-s', '--strip-meta', 'Strip Confluence metadata') do
+  opt.on('-s', '--strip-meta', 'Strip Confluence metadata (default false)') do
     options[:strip_meta] = true
+  end
+
+  opt.on('-e', '--[no-]strip-emoji', 'Strip emoji (default true') do |opt|
+    options[:strip_emoji] = opt
   end
 end
 
@@ -168,6 +257,7 @@ opt_parser.parse!
 
 c2m = Confluence2MD.new
 c2m.strip_meta = options[:strip_meta]
+c2m.strip_emoji = options[:strip_emoji]
 
 # If a single file is passed as an argument, process just that file
 if ARGV.count.positive?
