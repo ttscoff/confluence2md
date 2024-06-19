@@ -87,7 +87,7 @@ class ::String
 
   def strip_comments
     # Remove empty comments
-    gsub(/\n+ *<!-- *-->\n/, '')
+    gsub(/\n+ *<!-- *-->\n/, '').gsub(%r{</?span.*?>}m, '')
   end
 
   def strip_comments!
@@ -113,7 +113,7 @@ class Confluence2MD
 
       title = content.match(%r{<title>(.*?)</title>}m)[1].sub(/^.*? : /, '').sub(/👓/, '').sub(/copy of /i, '')
 
-      markdown = File.join('markdown', "#{title.slugify}.markdown")
+      markdown = File.join('markdown', "#{title.slugify}.md")
 
       content = content.strip_meta if @strip_meta
       content = content.cleanup
