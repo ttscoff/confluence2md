@@ -262,7 +262,7 @@ opt_parser = OptionParser.new do |opt|
     options[:strip_meta] = true
   end
 
-  opt.on('-e', '--[no-]strip-emoji', 'Strip emoji (default true') do |opt|
+  opt.on('-e', '--[no-]strip-emoji', 'Strip emoji (default true)') do |opt|
     options[:strip_emoji] = opt
   end
 
