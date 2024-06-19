@@ -1,3 +1,11 @@
+confluence2md 1.0.3
+
+-------------------------
+
+#### NEW
+
+- `--source` flag will include an HTML comment showing the original
+
 confluence2md 1.0.2
 
 -------------------------
