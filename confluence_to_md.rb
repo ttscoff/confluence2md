@@ -77,7 +77,7 @@ class ::String
       end
     end
 
-    metadata = content.sub!(%r{<div class="page-metadata">.*?</div>}m, '')
+    content.sub!(%r{<div class="page-metadata">.*?</div>}m, '')
 
     content.sub!(%r{<div id="footer-logo">.*?</div>}m, '')
     content.sub!(%r{<div id="footer" role="contentinfo">.*?</div>}m, '')
