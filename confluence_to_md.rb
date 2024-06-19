@@ -69,11 +69,12 @@ class ::String
     if breadcrumbs
       page_title = breadcrumbs[1].match(%r{<li class="first">.*?<a href="index.html">(.*?)</a>}m)
       if page_title
+        page_title = page_title[1]
         content.sub!(breadcrumbs[0], '')
         header = content.match(%r{<div id="main-header">(.*?)</div>}m)
 
         old_title = header[1].match(%r{<span id="title-text">(.*?)</span>}m)[1].strip
-        content.sub!(header[0], "<h1>#{old_title.sub(/#{page_title} : /, '').sub!(/copy of /i, '')}</h1>")
+        content.sub!(header[0], "<h1>#{old_title.sub(/#{page_title} : /, '').sub(/copy of /i, '')}</h1>")
       end
     end
 
