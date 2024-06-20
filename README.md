@@ -18,5 +18,6 @@ Options:
     -c, --clean                      Clear output directories before converting
     -s, --strip-meta                 Strip Confluence metadata (default false)
     -e, --[no-]strip-emoji           Strip emoji (default true)
+        --[no-]update-links          Update links to local files (default true)
         --[no-]source                Include an HTML comment with name of original HTML file
 ```
