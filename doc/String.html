@@ -384,7 +384,6 @@ zero-width spaces</p>
       <pre class="lines">
 
 
-95
 96
 97
 98
@@ -399,10 +398,12 @@ zero-width spaces</p>
 107
 108
 109
-110</pre>
+110
+111
+112</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'confluence_to_md.rb', line 95</span>
+      <pre class="code"><span class="info file"># File 'confluence_to_md.rb', line 96</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_cleanup'>cleanup</span>
   <span class='id identifier rubyid_content'>content</span> <span class='op'>=</span> <span class='id identifier rubyid_dup'>dup</span>
@@ -411,6 +412,7 @@ zero-width spaces</p>
   <span class='id identifier rubyid_content'>content</span><span class='period'>.</span><span class='id identifier rubyid_gsub!'>gsub!</span><span class='lparen'>(</span><span class='tstring'><span class='regexp_beg'>%r{</span><span class='tstring_content'>&lt;/?span.*?&gt;</span><span class='regexp_end'>}m</span></span><span class='comma'>,</span> <span class='tstring'><span class='tstring_beg'>&#39;</span><span class='tstring_end'>&#39;</span></span><span class='rparen'>)</span>
   <span class='id identifier rubyid_content'>content</span><span class='period'>.</span><span class='id identifier rubyid_gsub!'>gsub!</span><span class='lparen'>(</span><span class='tstring'><span class='regexp_beg'>/</span><span class='tstring_content'>&lt;(a href=&quot;.*?&quot;).*?&gt;</span><span class='regexp_end'>/</span></span><span class='comma'>,</span> <span class='tstring'><span class='tstring_beg'>&#39;</span><span class='tstring_content'>&lt;\1&gt;</span><span class='tstring_end'>&#39;</span></span><span class='rparen'>)</span>
   <span class='id identifier rubyid_content'>content</span><span class='period'>.</span><span class='id identifier rubyid_gsub!'>gsub!</span><span class='lparen'>(</span><span class='tstring'><span class='regexp_beg'>/</span><span class='tstring_content'>&lt;img class=&quot;icon&quot;.*?&gt;</span><span class='regexp_end'>/m</span></span><span class='comma'>,</span> <span class='tstring'><span class='tstring_beg'>&#39;</span><span class='tstring_end'>&#39;</span></span><span class='rparen'>)</span>
+  <span class='id identifier rubyid_content'>content</span><span class='period'>.</span><span class='id identifier rubyid_gsub!'>gsub!</span><span class='lparen'>(</span><span class='tstring'><span class='regexp_beg'>%r{</span><span class='tstring_content'>&lt;img.*class=&quot;confluence-embedded-image&quot;.*title=&quot;(.*?)&quot;&gt;</span><span class='regexp_end'>}m</span></span><span class='comma'>,</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>\n%image: \\1\n</span><span class='tstring_end'>&quot;</span></span><span class='rparen'>)</span>
   <span class='id identifier rubyid_content'>content</span><span class='period'>.</span><span class='id identifier rubyid_gsub!'>gsub!</span><span class='lparen'>(</span><span class='tstring'><span class='regexp_beg'>%r{</span><span class='tstring_content'>&lt;img.*? src=&quot;(.*?)&quot;.*?/?&gt;</span><span class='regexp_end'>}m</span></span><span class='comma'>,</span> <span class='tstring'><span class='tstring_beg'>&#39;</span><span class='tstring_content'>&lt;img src=&quot;\1&quot;&gt;</span><span class='tstring_end'>&#39;</span></span><span class='rparen'>)</span>
   <span class='id identifier rubyid_content'>content</span><span class='period'>.</span><span class='id identifier rubyid_gsub!'>gsub!</span><span class='lparen'>(</span><span class='tstring'><span class='regexp_beg'>%r{</span><span class='tstring_content'>&lt;img.*? data-src=&quot;(.*?)&quot;.*?/?&gt;</span><span class='regexp_end'>}m</span></span><span class='comma'>,</span> <span class='tstring'><span class='tstring_beg'>&#39;</span><span class='tstring_content'>&lt;img src=&quot;\1&quot;&gt;</span><span class='tstring_end'>&#39;</span></span><span class='rparen'>)</span>
   <span class='id identifier rubyid_content'>content</span><span class='period'>.</span><span class='id identifier rubyid_gsub!'>gsub!</span><span class='lparen'>(</span><span class='tstring'><span class='regexp_beg'>/</span><span class='tstring_content'> class=&quot;confluenceTd&quot; </span><span class='regexp_end'>/</span></span><span class='comma'>,</span> <span class='tstring'><span class='tstring_beg'>&#39;</span><span class='tstring_end'>&#39;</span></span><span class='rparen'>)</span>
@@ -467,12 +469,12 @@ zero-width spaces</p>
       <pre class="lines">
 
 
-117
-118
-119</pre>
+119
+120
+121</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'confluence_to_md.rb', line 117</span>
+      <pre class="code"><span class="info file"># File 'confluence_to_md.rb', line 119</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_relative_paths'>relative_paths</span>
   <span class='id identifier rubyid_gsub'>gsub</span><span class='lparen'>(</span><span class='tstring'><span class='regexp_beg'>%r{</span><span class='tstring_content'>markdown/images/</span><span class='regexp_end'>}</span></span><span class='comma'>,</span> <span class='tstring'><span class='tstring_beg'>&#39;</span><span class='tstring_content'>images/</span><span class='tstring_end'>&#39;</span></span><span class='rparen'>)</span>
@@ -531,12 +533,12 @@ zero-width spaces</p>
       <pre class="lines">
 
 
-127
-128
-129</pre>
+129
+130
+131</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'confluence_to_md.rb', line 127</span>
+      <pre class="code"><span class="info file"># File 'confluence_to_md.rb', line 129</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_relative_paths!'>relative_paths!</span>
   <span class='id identifier rubyid_replace'>replace</span> <span class='id identifier rubyid_relative_paths'>relative_paths</span>
@@ -645,13 +647,13 @@ zero-width spaces</p>
       <pre class="lines">
 
 
-136
-137
 138
-139</pre>
+139
+140
+141</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'confluence_to_md.rb', line 136</span>
+      <pre class="code"><span class="info file"># File 'confluence_to_md.rb', line 138</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_strip_comments'>strip_comments</span>
   <span class='comment'># Remove empty comments and spans
@@ -711,12 +713,12 @@ zero-width spaces</p>
       <pre class="lines">
 
 
-147
-148
-149</pre>
+149
+150
+151</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'confluence_to_md.rb', line 147</span>
+      <pre class="code"><span class="info file"># File 'confluence_to_md.rb', line 149</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_strip_comments!'>strip_comments!</span>
   <span class='id identifier rubyid_replace'>replace</span> <span class='id identifier rubyid_strip_comments'>strip_comments</span>
@@ -944,7 +946,8 @@ zero-width spaces</p>
 83
 84
 85
-86</pre>
+86
+87</pre>
     </td>
     <td>
       <pre class="code"><span class="info file"># File 'confluence_to_md.rb', line 63</span>
@@ -958,15 +961,16 @@ zero-width spaces</p>
   <span class='kw'>if</span> <span class='id identifier rubyid_breadcrumbs'>breadcrumbs</span>
     <span class='id identifier rubyid_page_title'>page_title</span> <span class='op'>=</span> <span class='id identifier rubyid_breadcrumbs'>breadcrumbs</span><span class='lbracket'>[</span><span class='int'>1</span><span class='rbracket'>]</span><span class='period'>.</span><span class='id identifier rubyid_match'>match</span><span class='lparen'>(</span><span class='tstring'><span class='regexp_beg'>%r{</span><span class='tstring_content'>&lt;li class=&quot;first&quot;&gt;.*?&lt;a href=&quot;index.html&quot;&gt;(.*?)&lt;/a&gt;</span><span class='regexp_end'>}m</span></span><span class='rparen'>)</span>
     <span class='kw'>if</span> <span class='id identifier rubyid_page_title'>page_title</span>
+      <span class='id identifier rubyid_page_title'>page_title</span> <span class='op'>=</span> <span class='id identifier rubyid_page_title'>page_title</span><span class='lbracket'>[</span><span class='int'>1</span><span class='rbracket'>]</span>
       <span class='id identifier rubyid_content'>content</span><span class='period'>.</span><span class='id identifier rubyid_sub!'>sub!</span><span class='lparen'>(</span><span class='id identifier rubyid_breadcrumbs'>breadcrumbs</span><span class='lbracket'>[</span><span class='int'>0</span><span class='rbracket'>]</span><span class='comma'>,</span> <span class='tstring'><span class='tstring_beg'>&#39;</span><span class='tstring_end'>&#39;</span></span><span class='rparen'>)</span>
       <span class='id identifier rubyid_header'>header</span> <span class='op'>=</span> <span class='id identifier rubyid_content'>content</span><span class='period'>.</span><span class='id identifier rubyid_match'>match</span><span class='lparen'>(</span><span class='tstring'><span class='regexp_beg'>%r{</span><span class='tstring_content'>&lt;div id=&quot;main-header&quot;&gt;(.*?)&lt;/div&gt;</span><span class='regexp_end'>}m</span></span><span class='rparen'>)</span>
 
       <span class='id identifier rubyid_old_title'>old_title</span> <span class='op'>=</span> <span class='id identifier rubyid_header'>header</span><span class='lbracket'>[</span><span class='int'>1</span><span class='rbracket'>]</span><span class='period'>.</span><span class='id identifier rubyid_match'>match</span><span class='lparen'>(</span><span class='tstring'><span class='regexp_beg'>%r{</span><span class='tstring_content'>&lt;span id=&quot;title-text&quot;&gt;(.*?)&lt;/span&gt;</span><span class='regexp_end'>}m</span></span><span class='rparen'>)</span><span class='lbracket'>[</span><span class='int'>1</span><span class='rbracket'>]</span><span class='period'>.</span><span class='id identifier rubyid_strip'>strip</span>
-      <span class='id identifier rubyid_content'>content</span><span class='period'>.</span><span class='id identifier rubyid_sub!'>sub!</span><span class='lparen'>(</span><span class='id identifier rubyid_header'>header</span><span class='lbracket'>[</span><span class='int'>0</span><span class='rbracket'>]</span><span class='comma'>,</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>&lt;h1&gt;</span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_old_title'>old_title</span><span class='period'>.</span><span class='id identifier rubyid_sub'>sub</span><span class='lparen'>(</span><span class='tstring'><span class='regexp_beg'>/</span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_page_title'>page_title</span><span class='embexpr_end'>}</span><span class='tstring_content'> : </span><span class='regexp_end'>/</span></span><span class='comma'>,</span> <span class='tstring'><span class='tstring_beg'>&#39;</span><span class='tstring_end'>&#39;</span></span><span class='rparen'>)</span><span class='period'>.</span><span class='id identifier rubyid_sub!'>sub!</span><span class='lparen'>(</span><span class='tstring'><span class='regexp_beg'>/</span><span class='tstring_content'>copy of </span><span class='regexp_end'>/i</span></span><span class='comma'>,</span> <span class='tstring'><span class='tstring_beg'>&#39;</span><span class='tstring_end'>&#39;</span></span><span class='rparen'>)</span><span class='embexpr_end'>}</span><span class='tstring_content'>&lt;/h1&gt;</span><span class='tstring_end'>&quot;</span></span><span class='rparen'>)</span>
+      <span class='id identifier rubyid_content'>content</span><span class='period'>.</span><span class='id identifier rubyid_sub!'>sub!</span><span class='lparen'>(</span><span class='id identifier rubyid_header'>header</span><span class='lbracket'>[</span><span class='int'>0</span><span class='rbracket'>]</span><span class='comma'>,</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>&lt;h1&gt;</span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_old_title'>old_title</span><span class='period'>.</span><span class='id identifier rubyid_sub'>sub</span><span class='lparen'>(</span><span class='tstring'><span class='regexp_beg'>/</span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_page_title'>page_title</span><span class='embexpr_end'>}</span><span class='tstring_content'> : </span><span class='regexp_end'>/</span></span><span class='comma'>,</span> <span class='tstring'><span class='tstring_beg'>&#39;</span><span class='tstring_end'>&#39;</span></span><span class='rparen'>)</span><span class='period'>.</span><span class='id identifier rubyid_sub'>sub</span><span class='lparen'>(</span><span class='tstring'><span class='regexp_beg'>/</span><span class='tstring_content'>copy of </span><span class='regexp_end'>/i</span></span><span class='comma'>,</span> <span class='tstring'><span class='tstring_beg'>&#39;</span><span class='tstring_end'>&#39;</span></span><span class='rparen'>)</span><span class='embexpr_end'>}</span><span class='tstring_content'>&lt;/h1&gt;</span><span class='tstring_end'>&quot;</span></span><span class='rparen'>)</span>
     <span class='kw'>end</span>
   <span class='kw'>end</span>
 
-  <span class='id identifier rubyid_metadata'>metadata</span> <span class='op'>=</span> <span class='id identifier rubyid_content'>content</span><span class='period'>.</span><span class='id identifier rubyid_sub!'>sub!</span><span class='lparen'>(</span><span class='tstring'><span class='regexp_beg'>%r{</span><span class='tstring_content'>&lt;div class=&quot;page-metadata&quot;&gt;.*?&lt;/div&gt;</span><span class='regexp_end'>}m</span></span><span class='comma'>,</span> <span class='tstring'><span class='tstring_beg'>&#39;</span><span class='tstring_end'>&#39;</span></span><span class='rparen'>)</span>
+  <span class='id identifier rubyid_content'>content</span><span class='period'>.</span><span class='id identifier rubyid_sub!'>sub!</span><span class='lparen'>(</span><span class='tstring'><span class='regexp_beg'>%r{</span><span class='tstring_content'>&lt;div class=&quot;page-metadata&quot;&gt;.*?&lt;/div&gt;</span><span class='regexp_end'>}m</span></span><span class='comma'>,</span> <span class='tstring'><span class='tstring_beg'>&#39;</span><span class='tstring_end'>&#39;</span></span><span class='rparen'>)</span>
 
   <span class='id identifier rubyid_content'>content</span><span class='period'>.</span><span class='id identifier rubyid_sub!'>sub!</span><span class='lparen'>(</span><span class='tstring'><span class='regexp_beg'>%r{</span><span class='tstring_content'>&lt;div id=&quot;footer-logo&quot;&gt;.*?&lt;/div&gt;</span><span class='regexp_end'>}m</span></span><span class='comma'>,</span> <span class='tstring'><span class='tstring_beg'>&#39;</span><span class='tstring_end'>&#39;</span></span><span class='rparen'>)</span>
   <span class='id identifier rubyid_content'>content</span><span class='period'>.</span><span class='id identifier rubyid_sub!'>sub!</span><span class='lparen'>(</span><span class='tstring'><span class='regexp_beg'>%r{</span><span class='tstring_content'>&lt;div id=&quot;footer&quot; role=&quot;contentinfo&quot;&gt;.*?&lt;/div&gt;</span><span class='regexp_end'>}m</span></span><span class='comma'>,</span> <span class='tstring'><span class='tstring_beg'>&#39;</span><span class='tstring_end'>&#39;</span></span><span class='rparen'>)</span>
@@ -983,7 +987,7 @@ zero-width spaces</p>
 </div>
 
       <div id="footer">
-  Generated on Wed Jun 19 11:17:16 2024 by
+  Generated on Thu Jun 20 12:34:21 2024 by
   <a href="https://yardoc.org" title="Yay! A Ruby Documentation Tool" target="_parent">yard</a>
   0.9.36 (ruby-3.0.1).
 </div>
