@@ -152,13 +152,14 @@ class ::String
 end
 
 class Confluence2MD
-  attr_writer :strip_meta, :strip_emoji, :clean_dirs, :include_source
+  attr_writer :strip_meta, :strip_emoji, :clean_dirs, :include_source, :update_links
 
   def initialize
     @strip_meta = false
     @strip_emoji = true
     @clean_dirs = false
     @include_source = false
+    @update_links = true
   end
 
   ##
@@ -178,6 +179,8 @@ class Confluence2MD
     end
     FileUtils.mkdir_p('stripped')
     FileUtils.mkdir_p('markdown/images')
+
+    index_h = {}
 
     Dir.glob('*.html') do |html|
       content = IO.read(html)
@@ -199,8 +202,24 @@ class Confluence2MD
 
       res.relative_paths!
       res.strip_comments!
+
       res = "#{res}\n\n<!--Source: #{html}-->\n" if @include_source
+      index_h[File.basename(html)] = File.basename(markdown)
       File.open(markdown, 'w') { |f| f.puts res }
+    end
+
+    update_links(index_h) if @update_links
+  end
+
+  def update_links(index_h)
+    Dir.chdir('markdown')
+    Dir.glob('*.md').each do |file|
+      content = IO.read(file)
+      index_h.each do |html, markdown|
+        target = markdown.sub(/\.md$/, '.html')
+        content.gsub!(/#{html}/, target)
+      end
+      File.open(file, 'w') { |f| f.puts content }
     end
   end
 
@@ -243,7 +262,8 @@ options = {
   strip_meta: false,
   strip_emoji: true,
   clean_dirs: false,
-  source: false
+  source: false,
+  update_links: true
 }
 
 opt_parser = OptionParser.new do |opt|
@@ -266,6 +286,10 @@ opt_parser = OptionParser.new do |opt|
     options[:strip_emoji] = opt
   end
 
+  opt.on('--[no-]update-links', 'Update links to local files (default true)') do |opt|
+    options[:update_links] = opt
+  end
+
   opt.on('--[no-]source', 'Include an HTML comment with name of original HTML file') do |opt|
     options[:source] = opt
   end
@@ -278,6 +302,7 @@ c2m.strip_meta = options[:strip_meta]
 c2m.strip_emoji = options[:strip_emoji]
 c2m.clean_dirs = options[:clean_dirs]
 c2m.include_source = options[:source]
+c2m.update_links = options[:update_links]
 
 # If a single file is passed as an argument, process just that file
 if ARGV.count.positive?
