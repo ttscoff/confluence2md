@@ -1,3 +1,10 @@
+confluence2md 1.0.4
+------------------------
+
+#### NEW
+
+- Update local HTML file links to markdown slug names (converted to .html extension). Can be disabled with `--no-update-links`.
+
 confluence2md 1.0.3
 -------------------------
 
