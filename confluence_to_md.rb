@@ -152,7 +152,8 @@ class ::String
 end
 
 class Confluence2MD
-  attr_writer :strip_meta, :strip_emoji, :clean_dirs, :include_source, :update_links
+  attr_writer :strip_meta, :strip_emoji, :clean_dirs,
+              :include_source, :update_links, :rename_files
 
   def initialize
     @strip_meta = false
@@ -160,6 +161,7 @@ class Confluence2MD
     @clean_dirs = false
     @include_source = false
     @update_links = true
+    @rename_files = true
   end
 
   ##
@@ -187,9 +189,12 @@ class Confluence2MD
       basename = File.basename(html, '.html')
       stripped = File.join('stripped', "#{basename}.html")
 
-      title = content.match(%r{<title>(.*?)</title>}m)[1].sub(/^.*? : /, '').sub(/👓/, '').sub(/copy of /i, '')
-
-      markdown = File.join('markdown', "#{title.slugify}.md")
+      markdown = if @rename_files
+                   title = content.match(%r{<title>(.*?)</title>}m)[1].sub(/^.*? : /, '').sub(/👓/, '').sub(/copy of /i, '')
+                   File.join('markdown', "#{title.slugify}.md")
+                 else
+                   File.join('markdown', "#{basename}.md")
+                 end
 
       content = content.strip_meta if @strip_meta
       content = content.cleanup
@@ -208,9 +213,17 @@ class Confluence2MD
       File.open(markdown, 'w') { |f| f.puts res }
     end
 
-    update_links(index_h) if @update_links
+    # Update local HTML links to Markdown filename
+    update_links(index_h) if @rename_files && @update_links
+    # Delete interim HTML directory
+    FileUtils.rm_f('stripped')
   end
 
+  ##
+  ## Update local links based on dictionary. Rewrites Markdown files in place.
+  ##
+  ## @param      index_h  [Hash] dictionary of filename mappings { [html_filename] = markdown_filename }
+  ##
   def update_links(index_h)
     Dir.chdir('markdown')
     Dir.glob('*.md').each do |file|
@@ -262,6 +275,7 @@ options = {
   strip_meta: false,
   strip_emoji: true,
   clean_dirs: false,
+  rename_files: true,
   source: false,
   update_links: true
 }
@@ -286,12 +300,16 @@ opt_parser = OptionParser.new do |opt|
     options[:strip_emoji] = opt
   end
 
-  opt.on('--[no-]update-links', 'Update links to local files (default true)') do |opt|
-    options[:update_links] = opt
+  opt.on('--[no-]rename', 'Rename output files based on page title (default true)') do |opt|
+    options[:rename_files] = opt
   end
 
-  opt.on('--[no-]source', 'Include an HTML comment with name of original HTML file') do |opt|
+  opt.on('--[no-]source', 'Include an HTML comment with name of original HTML file (default false)') do |opt|
     options[:source] = opt
+  end
+
+  opt.on('--[no-]update-links', 'Update links to local files (default true)') do |opt|
+    options[:update_links] = opt
   end
 end
 
@@ -303,6 +321,7 @@ c2m.strip_emoji = options[:strip_emoji]
 c2m.clean_dirs = options[:clean_dirs]
 c2m.include_source = options[:source]
 c2m.update_links = options[:update_links]
+c2m.rename_files = options[:rename_files]
 
 # If a single file is passed as an argument, process just that file
 if ARGV.count.positive?
