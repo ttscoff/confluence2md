@@ -1,7 +1,13 @@
-confluence2md 1.0.5
+confluence2md 1.0.6
 -------------------------
 
-#### NEW
+#### IMPROVED
 
-- File renaming is optional with `--no-rename`. Defaults to renaming output files as slug based on title.
+- Code refactoring
+
+#### FIXED
+
+- Image rescue missing images
+- --clean not removing directories
+- --source results being renamed when updating links
 
