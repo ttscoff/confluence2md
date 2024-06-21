@@ -57,7 +57,6 @@ class Confluence2MD
       content = content.strip_meta if @strip_meta
       content = content.cleanup
       content = content.strip_emoji if @strip_emoji
-      content = content.markdownify_images
 
       File.open(stripped, 'w') { |f| f.puts content }
 
