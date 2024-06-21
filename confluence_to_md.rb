@@ -9,148 +9,6 @@ require 'fileutils'
 require 'shellwords'
 require 'optparse'
 
-# string helpers
-class ::String
-  ##
-  ## Convert a string to hyphenated slug
-  ##
-  ## @return     [String] slug version
-  ##
-  def slugify
-    downcase.gsub(/[^a-z0-9]/, '-').gsub(/-+/, '-').gsub(/(^-|-$)/, '')
-  end
-
-  ##
-  ## Remove emojis from output
-  ##
-  ## @return     [String] string with emojis stripped
-  ##
-  def strip_emoji
-    text = dup.force_encoding('utf-8').encode
-
-    # symbols & pics
-    regex = /[\u{1f300}-\u{1f5ff}]/
-    clean = text.gsub(regex, '')
-
-    # enclosed chars
-    regex = /[\u{2500}-\u{2BEF}]/
-    clean = clean.gsub(regex, '')
-
-    # emoticons
-    regex = /[\u{1f600}-\u{1f64f}]/
-    clean = clean.gsub(regex, '')
-
-    # dingbats
-    regex = /[\u{2702}-\u{27b0}]/
-    clean.gsub(regex, '')
-  end
-
-  ##
-  ## Destructive version of #strip_emoji
-  ## @see        #strip_emoji
-  ##
-  ## @return     [String] string with emoji stripped
-  ##
-  def strip_emoji!
-    replace strip_emoji
-  end
-
-  ##
-  ## Strips out Confluence detritus like TOC and author metadata
-  ##
-  ## @return     [String] string with metadata cleaned out
-  ##
-  def strip_meta
-    content = dup
-    content.sub!(%r{<style.*?>.*?</style>}m, '')
-    content.gsub!(%r{<div class='toc-macro.*?</div>}m, '')
-
-    breadcrumbs = content.match(%r{<div id="breadcrumb-section">(.*?)</div>}m)
-    if breadcrumbs
-      page_title = breadcrumbs[1].match(%r{<li class="first">.*?<a href="index.html">(.*?)</a>}m)
-      if page_title
-        page_title = page_title[1]
-        content.sub!(breadcrumbs[0], '')
-        header = content.match(%r{<div id="main-header">(.*?)</div>}m)
-
-        old_title = header[1].match(%r{<span id="title-text">(.*?)</span>}m)[1].strip
-        content.sub!(header[0], "<h1>#{old_title.sub(/#{page_title} : /, '').sub(/copy of /i, '')}</h1>")
-      end
-    end
-
-    content.sub!(%r{<div class="page-metadata">.*?</div>}m, '')
-
-    content.sub!(%r{<div id="footer-logo">.*?</div>}m, '')
-    content.sub!(%r{<div id="footer" role="contentinfo">.*?</div>}m, '')
-
-    content
-  end
-
-  ##
-  ## Clean up HTML before Markdown conversion. Removes block elements
-  ## (div/section) and inline elements (span), fixes links and images, removes
-  ## zero-width spaces
-  ##
-  ## @return     [String] cleaned up HTML string
-  ##
-  def cleanup
-    content = dup
-    content.gsub!(%r{</?div.*?>}m, '')
-    content.gsub!(%r{</?section.*?>}m, '')
-    content.gsub!(%r{</?span.*?>}m, '')
-    content.gsub!(/<(a href=".*?").*?>/, '<\1>')
-    content.gsub!(/<img class="icon".*?>/m, '')
-    content.gsub!(%r{<img.*class="confluence-embedded-image".*title="(.*?)">}m, "\n%image: \\1\n")
-    content.gsub!(%r{<img.*? src="(.*?)".*?/?>}m, '<img src="\1">')
-    content.gsub!(%r{<img.*? data-src="(.*?)".*?/?>}m, '<img src="\1">')
-    content.gsub!(/ class="confluenceTd" /, '')
-    content.gsub!(%r{<span>\u00A0</span>}, ' ')
-    content.gsub!(/\u00A0/, ' ')
-    content.gsub!(%r{<span> *</span>}, ' ')
-    content.gsub!(/■/, '')
-    content
-  end
-
-  ##
-  ## Change image paths to correct relative path
-  ##
-  ## @return     [String] image paths replaced
-  ##
-  def relative_paths
-    gsub(%r{markdown/images/}, 'images/')
-  end
-
-  ##
-  ## Destructive version of #relative_paths
-  ## @see        #relative_paths
-  ##
-  ## @return     [String] image paths replaced
-  ##
-  def relative_paths!
-    replace relative_paths
-  end
-
-  ##
-  ## Comment/span stripping
-  ##
-  ## @return     [String] comments stripped
-  ##
-  def strip_comments
-    # Remove empty comments and spans
-    gsub(/\n+ *<!-- *-->\n/, '').gsub(%r{</?span.*?>}m, '')
-  end
-
-  ##
-  ## Destructive comment/span strip
-  ## @see        #strip_comments
-  ##
-  ## @return     [String] comments stripped
-  ##
-  def strip_comments!
-    replace strip_comments
-  end
-end
-
 class Confluence2MD
   attr_writer :strip_meta, :strip_emoji, :clean_dirs,
               :include_source, :update_links, :rename_files
@@ -199,6 +57,7 @@ class Confluence2MD
       content = content.strip_meta if @strip_meta
       content = content.cleanup
       content = content.strip_emoji if @strip_emoji
+      content = content.markdownify_images
 
       File.open(stripped, 'w') { |f| f.puts content }
 
@@ -207,6 +66,7 @@ class Confluence2MD
 
       res.relative_paths!
       res.strip_comments!
+      res.markdownify_images!
 
       res = "#{res}\n\n<!--Source: #{html}-->\n" if @include_source
       index_h[File.basename(html)] = File.basename(markdown)
@@ -268,6 +128,161 @@ class Confluence2MD
 
     res = `echo #{Shellwords.escape(input)} | pandoc --wrap=none --extract-media images -f html -t markdown_strict+rebase_relative_paths`
     res.relative_paths.strip_comments
+  end
+
+  # string helpers
+  class ::String
+    ##
+    ## Convert a string to hyphenated slug
+    ##
+    ## @return     [String] slug version
+    ##
+    def slugify
+      downcase.gsub(/[^a-z0-9]/, '-').gsub(/-+/, '-').gsub(/(^-|-$)/, '')
+    end
+
+    ##
+    ## Remove emojis from output
+    ##
+    ## @return     [String] string with emojis stripped
+    ##
+    def strip_emoji
+      text = dup.force_encoding('utf-8').encode
+
+      # symbols & pics
+      regex = /[\u{1f300}-\u{1f5ff}]/
+      clean = text.gsub(regex, '')
+
+      # enclosed chars
+      regex = /[\u{2500}-\u{2BEF}]/
+      clean = clean.gsub(regex, '')
+
+      # emoticons
+      regex = /[\u{1f600}-\u{1f64f}]/
+      clean = clean.gsub(regex, '')
+
+      # dingbats
+      regex = /[\u{2702}-\u{27b0}]/
+      clean.gsub(regex, '')
+    end
+
+    ##
+    ## Destructive version of #strip_emoji
+    ## @see        #strip_emoji
+    ##
+    ## @return     [String] string with emoji stripped
+    ##
+    def strip_emoji!
+      replace strip_emoji
+    end
+
+    ##
+    ## Strips out Confluence detritus like TOC and author metadata
+    ##
+    ## @return     [String] string with metadata cleaned out
+    ##
+    def strip_meta
+      content = dup
+      content.sub!(%r{<style.*?>.*?</style>}m, '')
+      content.gsub!(%r{<div class='toc-macro.*?</div>}m, '')
+
+      breadcrumbs = content.match(%r{<div id="breadcrumb-section">(.*?)</div>}m)
+      if breadcrumbs
+        page_title = breadcrumbs[1].match(%r{<li class="first">.*?<a href="index.html">(.*?)</a>}m)
+        if page_title
+          page_title = page_title[1]
+          content.sub!(breadcrumbs[0], '')
+          header = content.match(%r{<div id="main-header">(.*?)</div>}m)
+
+          old_title = header[1].match(%r{<span id="title-text">(.*?)</span>}m)[1].strip
+          content.sub!(header[0], "<h1>#{old_title.sub(/#{page_title} : /, '').sub(/copy of /i, '')}</h1>")
+        end
+      end
+
+      content.sub!(%r{<div class="page-metadata">.*?</div>}m, '')
+
+      content.sub!(%r{<div id="footer-logo">.*?</div>}m, '')
+      content.sub!(%r{<div id="footer" role="contentinfo">.*?</div>}m, '')
+
+      content
+    end
+
+    ##
+    ## Clean up HTML before Markdown conversion. Removes block elements
+    ## (div/section) and inline elements (span), fixes links and images, removes
+    ## zero-width spaces
+    ##
+    ## @return     [String] cleaned up HTML string
+    ##
+    def cleanup
+      content = dup
+      content.gsub!(%r{</?div.*?>}m, '')
+      content.gsub!(%r{</?section.*?>}m, '')
+      content.gsub!(%r{</?span.*?>}m, '')
+      content.gsub!(/<(a href=".*?").*?>/, '<\1>')
+      content.gsub!(/<img class="icon".*?>/m, '')
+      content.gsub!(%r{<img.*class="confluence-embedded-image.*?".*title="(.*?)">}m, "\n%image: \\1\n")
+      content.gsub!(%r{<img.*? src="(.*?)".*?/?>}m, '<img src="\1">')
+      content.gsub!(%r{<img.*? data-src="(.*?)".*?/?>}m, '<img src="\1">')
+      content.gsub!(/ class="confluenceTd" /, '')
+      content.gsub!(%r{<span>\u00A0</span>}, ' ')
+      content.gsub!(/\u00A0/, ' ')
+      content.gsub!(%r{<span> *</span>}, ' ')
+      content.gsub!(/■/, '')
+      content
+    end
+
+    ##
+    ## Change image paths to correct relative path
+    ##
+    ## @return     [String] image paths replaced
+    ##
+    def relative_paths
+      gsub(%r{markdown/images/}, 'images/')
+    end
+
+    ##
+    ## Destructive version of #relative_paths
+    ## @see        #relative_paths
+    ##
+    ## @return     [String] image paths replaced
+    ##
+    def relative_paths!
+      replace relative_paths
+    end
+
+    ##
+    ## Comment/span stripping
+    ##
+    ## @return     [String] comments stripped
+    ##
+    def strip_comments
+      # Remove empty comments and spans
+      gsub(/\n+ *<!-- *-->\n/, '').gsub(%r{</?span.*?>}m, '')
+    end
+
+    ##
+    ## Destructive comment/span strip
+    ## @see        #strip_comments
+    ##
+    ## @return     [String] comments stripped
+    ##
+    def strip_comments!
+      replace strip_comments
+    end
+
+    ##
+    ## Replace %image with Markdown format
+    ##
+    ## @return     [String] content with markdownified images
+    ##
+    def markdownify_images
+      gsub(/%image: (.*?)$/, '![](\1)')
+    end
+
+    def markdownify_images!
+      replace markdownify_images
+    end
   end
 end
 
