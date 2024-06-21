@@ -8,6 +8,7 @@
 require 'fileutils'
 require 'shellwords'
 require 'optparse'
+require 'erb'
 
 class Confluence2MD
   attr_writer :strip_meta, :strip_emoji, :clean_dirs,
@@ -276,7 +277,11 @@ class Confluence2MD
     ## @return     [String] content with markdownified images
     ##
     def markdownify_images
-      gsub(/%image: (.*?)$/, '![](\1)')
+      gsub(/%image: (.*?)$/) do
+        m = Regexp.last_match
+        url = ERB::Util.url_encode(m[1])
+        "![](#{url})"
+      end
     end
 
     def markdownify_images!
