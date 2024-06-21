@@ -34,8 +34,8 @@ class Confluence2MD
   def all_html
     if @clean_dirs
       # Clear out previous runs
-      FileUtils.rm_f('stripped') if File.directory?('stripped')
-      FileUtils.rm_f('markdown') if File.directory?('markdown')
+      FileUtils.rm_f('stripped') if File.exist?('stripped')
+      FileUtils.rm_f('markdown') if File.exist?('markdown')
     end
     FileUtils.mkdir_p('stripped')
     FileUtils.mkdir_p('markdown/images')
@@ -63,12 +63,12 @@ class Confluence2MD
 
       res = `pandoc --wrap=none --extract-media markdown/images -f html -t markdown_strict+rebase_relative_paths "#{stripped}"`
       warn "#{html} => #{markdown}"
+      res = "#{res}\n\n<!--Source: #{html}-->\n" if @include_source
 
       res.relative_paths!
       res.strip_comments!
       res.markdownify_images!
 
-      res = "#{res}\n\n<!--Source: #{html}-->\n" if @include_source
       index_h[File.basename(html)] = File.basename(markdown)
       File.open(markdown, 'w') { |f| f.puts res }
     end
@@ -90,7 +90,7 @@ class Confluence2MD
       content = IO.read(file)
       index_h.each do |html, markdown|
         target = markdown.sub(/\.md$/, '.html')
-        content.gsub!(/#{html}/, target)
+        content.gsub!(/(?<!Source: )#{html}/, target)
       end
       File.open(file, 'w') { |f| f.puts content }
     end
