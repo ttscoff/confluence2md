@@ -150,6 +150,52 @@
         <li class="public ">
   <span class="summary_signature">
     
+      <a href="#markdownify_images-instance_method" title="#markdownify_images (instance method)">#<strong>markdownify_images</strong>  &#x21d2; String </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'><p>Replace %image with Markdown format.</p>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#markdownify_images!-instance_method" title="#markdownify_images! (instance method)">#<strong>markdownify_images!</strong>  &#x21d2; String </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'><p>Destructive version of markdownify_images.</p>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
       <a href="#relative_paths-instance_method" title="#relative_paths (instance method)">#<strong>relative_paths</strong>  &#x21d2; String </a>
     
 
@@ -384,26 +430,26 @@ zero-width spaces</p>
       <pre class="lines">
 
 
-96
-97
-98
-99
-100
-101
-102
-103
-104
-105
-106
-107
-108
-109
-110
-111
-112</pre>
+227
+228
+229
+230
+231
+232
+233
+234
+235
+236
+237
+238
+239
+240
+241
+242
+243</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'confluence_to_md.rb', line 96</span>
+      <pre class="code"><span class="info file"># File 'confluence_to_md.rb', line 227</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_cleanup'>cleanup</span>
   <span class='id identifier rubyid_content'>content</span> <span class='op'>=</span> <span class='id identifier rubyid_dup'>dup</span>
@@ -412,7 +458,7 @@ zero-width spaces</p>
   <span class='id identifier rubyid_content'>content</span><span class='period'>.</span><span class='id identifier rubyid_gsub!'>gsub!</span><span class='lparen'>(</span><span class='tstring'><span class='regexp_beg'>%r{</span><span class='tstring_content'>&lt;/?span.*?&gt;</span><span class='regexp_end'>}m</span></span><span class='comma'>,</span> <span class='tstring'><span class='tstring_beg'>&#39;</span><span class='tstring_end'>&#39;</span></span><span class='rparen'>)</span>
   <span class='id identifier rubyid_content'>content</span><span class='period'>.</span><span class='id identifier rubyid_gsub!'>gsub!</span><span class='lparen'>(</span><span class='tstring'><span class='regexp_beg'>/</span><span class='tstring_content'>&lt;(a href=&quot;.*?&quot;).*?&gt;</span><span class='regexp_end'>/</span></span><span class='comma'>,</span> <span class='tstring'><span class='tstring_beg'>&#39;</span><span class='tstring_content'>&lt;\1&gt;</span><span class='tstring_end'>&#39;</span></span><span class='rparen'>)</span>
   <span class='id identifier rubyid_content'>content</span><span class='period'>.</span><span class='id identifier rubyid_gsub!'>gsub!</span><span class='lparen'>(</span><span class='tstring'><span class='regexp_beg'>/</span><span class='tstring_content'>&lt;img class=&quot;icon&quot;.*?&gt;</span><span class='regexp_end'>/m</span></span><span class='comma'>,</span> <span class='tstring'><span class='tstring_beg'>&#39;</span><span class='tstring_end'>&#39;</span></span><span class='rparen'>)</span>
-  <span class='id identifier rubyid_content'>content</span><span class='period'>.</span><span class='id identifier rubyid_gsub!'>gsub!</span><span class='lparen'>(</span><span class='tstring'><span class='regexp_beg'>%r{</span><span class='tstring_content'>&lt;img.*class=&quot;confluence-embedded-image&quot;.*title=&quot;(.*?)&quot;&gt;</span><span class='regexp_end'>}m</span></span><span class='comma'>,</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>\n%image: \\1\n</span><span class='tstring_end'>&quot;</span></span><span class='rparen'>)</span>
+  <span class='id identifier rubyid_content'>content</span><span class='period'>.</span><span class='id identifier rubyid_gsub!'>gsub!</span><span class='lparen'>(</span><span class='tstring'><span class='regexp_beg'>%r{</span><span class='tstring_content'>&lt;img.*class=&quot;confluence-embedded-image.*?&quot;.*title=&quot;(.*?)&quot;&gt;</span><span class='regexp_end'>}m</span></span><span class='comma'>,</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>\n%image: \\1\n</span><span class='tstring_end'>&quot;</span></span><span class='rparen'>)</span>
   <span class='id identifier rubyid_content'>content</span><span class='period'>.</span><span class='id identifier rubyid_gsub!'>gsub!</span><span class='lparen'>(</span><span class='tstring'><span class='regexp_beg'>%r{</span><span class='tstring_content'>&lt;img.*? src=&quot;(.*?)&quot;.*?/?&gt;</span><span class='regexp_end'>}m</span></span><span class='comma'>,</span> <span class='tstring'><span class='tstring_beg'>&#39;</span><span class='tstring_content'>&lt;img src=&quot;\1&quot;&gt;</span><span class='tstring_end'>&#39;</span></span><span class='rparen'>)</span>
   <span class='id identifier rubyid_content'>content</span><span class='period'>.</span><span class='id identifier rubyid_gsub!'>gsub!</span><span class='lparen'>(</span><span class='tstring'><span class='regexp_beg'>%r{</span><span class='tstring_content'>&lt;img.*? data-src=&quot;(.*?)&quot;.*?/?&gt;</span><span class='regexp_end'>}m</span></span><span class='comma'>,</span> <span class='tstring'><span class='tstring_beg'>&#39;</span><span class='tstring_content'>&lt;img src=&quot;\1&quot;&gt;</span><span class='tstring_end'>&#39;</span></span><span class='rparen'>)</span>
   <span class='id identifier rubyid_content'>content</span><span class='period'>.</span><span class='id identifier rubyid_gsub!'>gsub!</span><span class='lparen'>(</span><span class='tstring'><span class='regexp_beg'>/</span><span class='tstring_content'> class=&quot;confluenceTd&quot; </span><span class='regexp_end'>/</span></span><span class='comma'>,</span> <span class='tstring'><span class='tstring_beg'>&#39;</span><span class='tstring_end'>&#39;</span></span><span class='rparen'>)</span>
@@ -421,6 +467,135 @@ zero-width spaces</p>
   <span class='id identifier rubyid_content'>content</span><span class='period'>.</span><span class='id identifier rubyid_gsub!'>gsub!</span><span class='lparen'>(</span><span class='tstring'><span class='regexp_beg'>%r{</span><span class='tstring_content'>&lt;span&gt; *&lt;/span&gt;</span><span class='regexp_end'>}</span></span><span class='comma'>,</span> <span class='tstring'><span class='tstring_beg'>&#39;</span><span class='tstring_content'> </span><span class='tstring_end'>&#39;</span></span><span class='rparen'>)</span>
   <span class='id identifier rubyid_content'>content</span><span class='period'>.</span><span class='id identifier rubyid_gsub!'>gsub!</span><span class='lparen'>(</span><span class='tstring'><span class='regexp_beg'>/</span><span class='tstring_content'>■</span><span class='regexp_end'>/</span></span><span class='comma'>,</span> <span class='tstring'><span class='tstring_beg'>&#39;</span><span class='tstring_end'>&#39;</span></span><span class='rparen'>)</span>
   <span class='id identifier rubyid_content'>content</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="markdownify_images-instance_method">
+  
+    #<strong>markdownify_images</strong>  &#x21d2; <tt><span class='object_link'><a href="" title="String (class)">String</a></span></tt> 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    <p>Replace %image with Markdown format</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+<p class="tag_title">Returns:</p>
+<ul class="return">
+  
+    <li>
+      
+      
+        <span class='type'>(<tt><span class='object_link'><a href="" title="String (class)">String</a></span></tt>)</span>
+      
+      
+      
+        &mdash;
+        <div class='inline'><p>content with markdownified images</p>
+</div>
+      
+    </li>
+  
+</ul>
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+289
+290
+291
+292
+293
+294
+295</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'confluence_to_md.rb', line 289</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_markdownify_images'>markdownify_images</span>
+  <span class='id identifier rubyid_gsub'>gsub</span><span class='lparen'>(</span><span class='tstring'><span class='regexp_beg'>/</span><span class='tstring_content'>%image: (.*?)$</span><span class='regexp_end'>/</span></span><span class='rparen'>)</span> <span class='kw'>do</span>
+    <span class='id identifier rubyid_m'>m</span> <span class='op'>=</span> <span class='const'>Regexp</span><span class='period'>.</span><span class='id identifier rubyid_last_match'>last_match</span>
+    <span class='id identifier rubyid_url'>url</span> <span class='op'>=</span> <span class='const'>ERB</span><span class='op'>::</span><span class='const'>Util</span><span class='period'>.</span><span class='id identifier rubyid_url_encode'>url_encode</span><span class='lparen'>(</span><span class='id identifier rubyid_m'>m</span><span class='lbracket'>[</span><span class='int'>1</span><span class='rbracket'>]</span><span class='rparen'>)</span>
+    <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>![](</span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_url'>url</span><span class='embexpr_end'>}</span><span class='tstring_content'>)</span><span class='tstring_end'>&quot;</span></span>
+  <span class='kw'>end</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="markdownify_images!-instance_method">
+  
+    #<strong>markdownify_images!</strong>  &#x21d2; <tt><span class='object_link'><a href="" title="String (class)">String</a></span></tt> 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    <p>Destructive version of markdownify_images</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+<p class="tag_title">Returns:</p>
+<ul class="return">
+  
+    <li>
+      
+      
+        <span class='type'>(<tt><span class='object_link'><a href="" title="String (class)">String</a></span></tt>)</span>
+      
+      
+      
+        &mdash;
+        <div class='inline'><p>content with markdownified images</p>
+</div>
+      
+    </li>
+  
+</ul>
+
+  <p class="tag_title">See Also:</p>
+  <ul class="see">
+    
+      <li><span class='object_link'><a href="#markdownify_images-instance_method" title="String#markdownify_images (method)">#markdownify_images</a></span></li>
+    
+  </ul>
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+303
+304
+305</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'confluence_to_md.rb', line 303</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_markdownify_images!'>markdownify_images!</span>
+  <span class='id identifier rubyid_replace'>replace</span> <span class='id identifier rubyid_markdownify_images'>markdownify_images</span>
 <span class='kw'>end</span></pre>
     </td>
   </tr>
@@ -469,12 +644,12 @@ zero-width spaces</p>
       <pre class="lines">
 
 
-119
-120
-121</pre>
+250
+251
+252</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'confluence_to_md.rb', line 119</span>
+      <pre class="code"><span class="info file"># File 'confluence_to_md.rb', line 250</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_relative_paths'>relative_paths</span>
   <span class='id identifier rubyid_gsub'>gsub</span><span class='lparen'>(</span><span class='tstring'><span class='regexp_beg'>%r{</span><span class='tstring_content'>markdown/images/</span><span class='regexp_end'>}</span></span><span class='comma'>,</span> <span class='tstring'><span class='tstring_beg'>&#39;</span><span class='tstring_content'>images/</span><span class='tstring_end'>&#39;</span></span><span class='rparen'>)</span>
@@ -533,12 +708,12 @@ zero-width spaces</p>
       <pre class="lines">
 
 
-129
-130
-131</pre>
+260
+261
+262</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'confluence_to_md.rb', line 129</span>
+      <pre class="code"><span class="info file"># File 'confluence_to_md.rb', line 260</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_relative_paths!'>relative_paths!</span>
   <span class='id identifier rubyid_replace'>replace</span> <span class='id identifier rubyid_relative_paths'>relative_paths</span>
@@ -590,12 +765,12 @@ zero-width spaces</p>
       <pre class="lines">
 
 
-19
-20
-21</pre>
+150
+151
+152</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'confluence_to_md.rb', line 19</span>
+      <pre class="code"><span class="info file"># File 'confluence_to_md.rb', line 150</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_slugify'>slugify</span>
   <span class='id identifier rubyid_downcase'>downcase</span><span class='period'>.</span><span class='id identifier rubyid_gsub'>gsub</span><span class='lparen'>(</span><span class='tstring'><span class='regexp_beg'>/</span><span class='tstring_content'>[^a-z0-9]</span><span class='regexp_end'>/</span></span><span class='comma'>,</span> <span class='tstring'><span class='tstring_beg'>&#39;</span><span class='tstring_content'>-</span><span class='tstring_end'>&#39;</span></span><span class='rparen'>)</span><span class='period'>.</span><span class='id identifier rubyid_gsub'>gsub</span><span class='lparen'>(</span><span class='tstring'><span class='regexp_beg'>/</span><span class='tstring_content'>-+</span><span class='regexp_end'>/</span></span><span class='comma'>,</span> <span class='tstring'><span class='tstring_beg'>&#39;</span><span class='tstring_content'>-</span><span class='tstring_end'>&#39;</span></span><span class='rparen'>)</span><span class='period'>.</span><span class='id identifier rubyid_gsub'>gsub</span><span class='lparen'>(</span><span class='tstring'><span class='regexp_beg'>/</span><span class='tstring_content'>(^-|-$)</span><span class='regexp_end'>/</span></span><span class='comma'>,</span> <span class='tstring'><span class='tstring_beg'>&#39;</span><span class='tstring_end'>&#39;</span></span><span class='rparen'>)</span>
@@ -647,13 +822,13 @@ zero-width spaces</p>
       <pre class="lines">
 
 
-138
-139
-140
-141</pre>
+269
+270
+271
+272</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'confluence_to_md.rb', line 138</span>
+      <pre class="code"><span class="info file"># File 'confluence_to_md.rb', line 269</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_strip_comments'>strip_comments</span>
   <span class='comment'># Remove empty comments and spans
@@ -713,12 +888,12 @@ zero-width spaces</p>
       <pre class="lines">
 
 
-149
-150
-151</pre>
+280
+281
+282</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'confluence_to_md.rb', line 149</span>
+      <pre class="code"><span class="info file"># File 'confluence_to_md.rb', line 280</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_strip_comments!'>strip_comments!</span>
   <span class='id identifier rubyid_replace'>replace</span> <span class='id identifier rubyid_strip_comments'>strip_comments</span>
@@ -770,28 +945,28 @@ zero-width spaces</p>
       <pre class="lines">
 
 
-28
-29
-30
-31
-32
-33
-34
-35
-36
-37
-38
-39
-40
-41
-42
-43
-44
-45
-46</pre>
+159
+160
+161
+162
+163
+164
+165
+166
+167
+168
+169
+170
+171
+172
+173
+174
+175
+176
+177</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'confluence_to_md.rb', line 28</span>
+      <pre class="code"><span class="info file"># File 'confluence_to_md.rb', line 159</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_strip_emoji'>strip_emoji</span>
   <span class='id identifier rubyid_text'>text</span> <span class='op'>=</span> <span class='id identifier rubyid_dup'>dup</span><span class='period'>.</span><span class='id identifier rubyid_force_encoding'>force_encoding</span><span class='lparen'>(</span><span class='tstring'><span class='tstring_beg'>&#39;</span><span class='tstring_content'>utf-8</span><span class='tstring_end'>&#39;</span></span><span class='rparen'>)</span><span class='period'>.</span><span class='id identifier rubyid_encode'>encode</span>
@@ -866,12 +1041,12 @@ zero-width spaces</p>
       <pre class="lines">
 
 
-54
-55
-56</pre>
+185
+186
+187</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'confluence_to_md.rb', line 54</span>
+      <pre class="code"><span class="info file"># File 'confluence_to_md.rb', line 185</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_strip_emoji!'>strip_emoji!</span>
   <span class='id identifier rubyid_replace'>replace</span> <span class='id identifier rubyid_strip_emoji'>strip_emoji</span>
@@ -923,34 +1098,34 @@ zero-width spaces</p>
       <pre class="lines">
 
 
-63
-64
-65
-66
-67
-68
-69
-70
-71
-72
-73
-74
-75
-76
-77
-78
-79
-80
-81
-82
-83
-84
-85
-86
-87</pre>
+194
+195
+196
+197
+198
+199
+200
+201
+202
+203
+204
+205
+206
+207
+208
+209
+210
+211
+212
+213
+214
+215
+216
+217
+218</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'confluence_to_md.rb', line 63</span>
+      <pre class="code"><span class="info file"># File 'confluence_to_md.rb', line 194</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_strip_meta'>strip_meta</span>
   <span class='id identifier rubyid_content'>content</span> <span class='op'>=</span> <span class='id identifier rubyid_dup'>dup</span>
@@ -987,7 +1162,7 @@ zero-width spaces</p>
 </div>
 
       <div id="footer">
-  Generated on Thu Jun 20 12:34:21 2024 by
+  Generated on Fri Jun 21 08:56:02 2024 by
   <a href="https://yardoc.org" title="Yay! A Ruby Documentation Tool" target="_parent">yard</a>
   0.9.36 (ruby-3.0.1).
 </div>

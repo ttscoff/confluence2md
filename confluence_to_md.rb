@@ -11,8 +11,18 @@ require 'optparse'
 require 'erb'
 
 class Confluence2MD
-  attr_writer :strip_meta, :strip_emoji, :clean_dirs,
-              :include_source, :update_links, :rename_files
+  # Preference to delete output directories
+  attr_writer :clean_dirs
+  # Preference to strip metadata
+  attr_writer :strip_meta
+  # Preference to strip emoji
+  attr_writer :strip_emoji
+  # Preference to rename files to title slug
+  attr_writer :rename_files
+  # Preference to update local links to markdown slugs
+  attr_writer :update_links
+  # Preference to include source comment in markdown output
+  attr_writer :include_source
 
   def initialize
     @strip_meta = false
@@ -284,6 +294,12 @@ class Confluence2MD
       end
     end
 
+    ##
+    ## Destructive version of markdownify_images
+    ## @see #markdownify_images
+    ##
+    ## @return     [String] content with markdownified images
+    ##
     def markdownify_images!
       replace markdownify_images
     end
