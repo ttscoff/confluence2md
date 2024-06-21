@@ -5,7 +5,7 @@ This script is designed to run on a batch HTML export from Confluence to output 
 ## Requirements
 
 - Ruby 3.x
-- Pandoc installed in $PATH (see [Installing docs](https://pandoc.org/installing.html))
+- Pandoc installed in $PATH (see [Installation](https://pandoc.org/installing.html))
 
 ## Usage
 
@@ -18,6 +18,7 @@ Options:
     -c, --clean                      Clear output directories before converting
     -s, --strip-meta                 Strip Confluence metadata (default false)
     -e, --[no-]strip-emoji           Strip emoji (default true)
+        --[no-]rename                Rename output files based on page title (default true)
+        --[no-]source                Include an HTML comment with name of original HTML file (default false)
         --[no-]update-links          Update links to local files (default true)
-        --[no-]source                Include an HTML comment with name of original HTML file
 ```
