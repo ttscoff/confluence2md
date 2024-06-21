@@ -1,13 +1,13 @@
-confluence2md 1.0.6
+1.0.7
+
+confluence2md 1.0.7
 -------------------------
 
 #### IMPROVED
 
-- Code refactoring
+- URL encoded image paths in replaced images
 
 #### FIXED
 
-- Image rescue missing images
-- --clean not removing directories
-- --source results being renamed when updating links
+- Markdownify_images running too soon, being escaped by Pandoc
 
