@@ -193,24 +193,31 @@ class Confluence2MD
     ##
     def strip_meta
       content = dup
+      # Remove style tags and content
       content.sub!(%r{<style.*?>.*?</style>}m, '')
+      # Remove TOC
       content.gsub!(%r{<div class='toc-macro.*?</div>}m, '')
 
+      # Match breadcrumb-section
       breadcrumbs = content.match(%r{<div id="breadcrumb-section">(.*?)</div>}m)
       if breadcrumbs
+        # Extract page title from breadcrumbs
         page_title = breadcrumbs[1].match(%r{<li class="first">.*?<a href="index.html">(.*?)</a>}m)
         if page_title
           page_title = page_title[1]
           content.sub!(breadcrumbs[0], '')
+          # find header
           header = content.match(%r{<div id="main-header">(.*?)</div>}m)
 
           old_title = header[1].match(%r{<span id="title-text">(.*?)</span>}m)[1].strip
+          # Replace header with title we found as H1
           content.sub!(header[0], "<h1>#{old_title.sub(/#{page_title} : /, '').sub(/copy of /i, '')}</h1>")
         end
       end
 
+      # Remove entire page-metadata block
       content.sub!(%r{<div class="page-metadata">.*?</div>}m, '')
-
+      # Remove footer elements (attribution)
       content.sub!(%r{<div id="footer-logo">.*?</div>}m, '')
       content.sub!(%r{<div id="footer" role="contentinfo">.*?</div>}m, '')
 
@@ -226,18 +233,26 @@ class Confluence2MD
     ##
     def cleanup
       content = dup
+      # delete div, section, and span tags (preserve content)
       content.gsub!(%r{</?div.*?>}m, '')
       content.gsub!(%r{</?section.*?>}m, '')
       content.gsub!(%r{</?span.*?>}m, '')
+      # delete additional attributes on links (pandoc outputs weird syntax for attributes)
       content.gsub!(/<(a href=".*?").*?>/, '<\1>')
+      # Delete icons
       content.gsub!(/<img class="icon".*?>/m, '')
+      # Convert embedded images to easily-matched syntax for later replacement
       content.gsub!(%r{<img.*class="confluence-embedded-image.*?".*title="(.*?)">}m, "\n%image: \\1\n")
+      # Rewrite img tags with just src, converting data-src to src
       content.gsub!(%r{<img.*? src="(.*?)".*?/?>}m, '<img src="\1">')
       content.gsub!(%r{<img.*? data-src="(.*?)".*?/?>}m, '<img src="\1">')
+      # Remove confluenceTd from tables
       content.gsub!(/ class="confluenceTd" /, '')
+      # Remove zero-width spaces and empty spans
       content.gsub!(%r{<span>\u00A0</span>}, ' ')
       content.gsub!(/\u00A0/, ' ')
       content.gsub!(%r{<span> *</span>}, ' ')
+      # Remove squares from lists
       content.gsub!(/■/, '')
       content
     end
@@ -288,6 +303,7 @@ class Confluence2MD
     ##
     def markdownify_images
       gsub(/%image: (.*?)$/) do
+        # URL-encode image path
         m = Regexp.last_match
         url = ERB::Util.url_encode(m[1])
         "![](#{url})"
