@@ -238,7 +238,7 @@ class Confluence2MD
       content.gsub!(%r{</?section.*?>}m, '')
       content.gsub!(%r{</?span.*?>}m, '')
       # delete additional attributes on links (pandoc outputs weird syntax for attributes)
-      content.gsub!(/<(a href=".*?").*?>/, '<\1>')
+      content.gsub!(/<a.*?(href=".*?").*?>/, '<a \1>')
       # Delete icons
       content.gsub!(/<img class="icon".*?>/m, '')
       # Convert embedded images to easily-matched syntax for later replacement
