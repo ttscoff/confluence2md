@@ -23,6 +23,12 @@ class Confluence2MD
   attr_writer :update_links
   # Preference to include source comment in markdown output
   attr_writer :include_source
+  # Preference to fix headers
+  attr_writer :fix_headers
+  # Preference to fix hierarchy
+  attr_writer :fix_hierarchy
+  # VERSION number
+  attr_reader :version
 
   def initialize
     @strip_meta = false
@@ -31,6 +37,9 @@ class Confluence2MD
     @include_source = false
     @update_links = true
     @rename_files = true
+    @fix_headers = true
+    @fix_hierarchy = true
+    @version = get_version
   end
 
   ##
@@ -68,6 +77,8 @@ class Confluence2MD
       content = content.strip_meta if @strip_meta
       content = content.cleanup
       content = content.strip_emoji if @strip_emoji
+      content = content.fix_headers if @fix_headers
+      content = content.fix_hierarchy if @fix_hierarchy
 
       File.open(stripped, 'w') { |f| f.puts content }
 
@@ -118,6 +129,8 @@ class Confluence2MD
     content = content.strip_meta if @strip_meta
     content = content.cleanup
     content = content.strip_emoji if @strip_emoji
+    content = content.fix_headers if @fix_headers
+    content = content.fix_hierarchy if @fix_hierarchy
 
     res = `echo #{Shellwords.escape(content)} | pandoc --wrap=none --extract-media images -f html -t markdown_strict+rebase_relative_paths`
     res = "#{res}\n\n<!--Source: #{html}-->\n" if @include_source
@@ -135,6 +148,8 @@ class Confluence2MD
     input = input.strip_meta if @strip_meta
     input = input.cleanup
     input = input.strip_emoji if @strip_emoji
+    input = input.fix_headers if @fix_headers
+    input = input.fix_hierarchy if @fix_hierarchy
 
     res = `echo #{Shellwords.escape(input)} | pandoc --wrap=none --extract-media images -f html -t markdown_strict+rebase_relative_paths`
     res.relative_paths.strip_comments
@@ -220,6 +235,58 @@ class Confluence2MD
       # Remove footer elements (attribution)
       content.sub!(%r{<div id="footer-logo">.*?</div>}m, '')
       content.sub!(%r{<div id="footer" role="contentinfo">.*?</div>}m, '')
+
+      content
+    end
+
+    ##
+    ## Count the number of h1 headers in the document
+    ##
+    ## @return     Number of h1s.
+    ##
+    def count_h1s
+      scan(/<h1.*?>/).count
+    end
+
+    ##
+    ## Bump all headers except for first H1
+    ##
+    ## @return     Content with adjusted headers
+    ##
+    def fix_headers
+      return self if count_h1s == 1
+
+      first_h1 = true
+
+      gsub(%r{<h([1-6]).*?>(.*?)</h\1>}m) do
+        m = Regexp.last_match
+        level = m[1].to_i
+        content = m[2].strip
+        if level == 1 && first_h1
+          first_h1 = false
+          m[0]
+        else
+          level += 1 if level < 6
+
+          "<h#{level}>#{content}</h#{level}>"
+        end
+      end
+    end
+
+    def fix_hierarchy
+      headers = to_enum(:scan, %r{<h([1-6]).*?>(.*?)</h\1>}m).map { Regexp.last_match }
+      content = dup
+      last = 1
+      headers.each do |h|
+        level = h[1].to_i
+        if level <= last + 1
+          last = level
+          next
+        end
+
+        level = last + 1
+        content.sub!(/#{Regexp.escape(h[0])}/, "<h#{level}>#{h[2]}</h#{level}>")
+      end
 
       content
     end
@@ -320,14 +387,28 @@ class Confluence2MD
       replace markdownify_images
     end
   end
+
+  private
+
+  def get_version
+    version_file = File.join(File.dirname(File.realdirpath(__FILE__)), 'VERSION')
+    if File.exist?(version_file)
+      version = IO.read(version_file).strip
+      "v#{version}"
+    else
+      '(version unavailable)'
+    end
+  end
 end
 
 options = {
-  strip_meta: false,
-  strip_emoji: true,
   clean_dirs: false,
+  fix_headers: true,
+  fix_hierarchy: true,
   rename_files: true,
   source: false,
+  strip_emoji: true,
+  strip_meta: false,
   update_links: true
 }
 
@@ -347,20 +428,34 @@ opt_parser = OptionParser.new do |opt|
     options[:strip_meta] = true
   end
 
-  opt.on('-e', '--[no-]strip-emoji', 'Strip emoji (default true)') do |opt|
-    options[:strip_emoji] = opt
+  opt.on('-f', '--[no-]fix-headers', 'Bump all headers except first h1 (default true)') do |option|
+    options[:fix_headers] = option
   end
 
-  opt.on('--[no-]rename', 'Rename output files based on page title (default true)') do |opt|
-    options[:rename_files] = opt
+  opt.on('-o', '--[no-]fix-hierarchy', 'Fix header nesting order (default true)') do |option|
+    options[:fix_hierarchy] = option
   end
 
-  opt.on('--[no-]source', 'Include an HTML comment with name of original HTML file (default false)') do |opt|
-    options[:source] = opt
+  opt.on('-e', '--[no-]strip-emoji', 'Strip emoji (default true)') do |option|
+    options[:strip_emoji] = option
   end
 
-  opt.on('--[no-]update-links', 'Update links to local files (default true)') do |opt|
-    options[:update_links] = opt
+  opt.on('--[no-]rename', 'Rename output files based on page title (default true)') do |option|
+    options[:rename_files] = option
+  end
+
+  opt.on('--[no-]source', 'Include an HTML comment with name of original HTML file (default false)') do |option|
+    options[:source] = option
+  end
+
+  opt.on('--[no-]update-links', 'Update links to local files (default true)') do |option|
+    options[:update_links] = option
+  end
+
+  opt.on('-v', '--version', 'Display version number') do
+    c2m = Confluence2MD.new
+    puts "#{File.basename(__FILE__)} #{c2m.version}"
+    Process.exit 0
   end
 end
 
@@ -373,6 +468,8 @@ c2m.clean_dirs = options[:clean_dirs]
 c2m.include_source = options[:source]
 c2m.update_links = options[:update_links]
 c2m.rename_files = options[:rename_files]
+c2m.fix_headers = options[:fix_headers]
+c2m.fix_hierarchy = options[:fix_hierarchy]
 
 # If a single file is passed as an argument, process just that file
 if ARGV.count.positive?
