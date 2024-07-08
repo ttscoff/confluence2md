@@ -10,6 +10,168 @@ require 'shellwords'
 require 'optparse'
 require 'erb'
 
+##
+## Class for converting HTML to Markdown using Nokogiri
+##
+class HTML2Markdown
+  def initialize(str, baseurl = nil)
+    begin
+      require 'nokogiri'
+    rescue LoadError
+      puts 'Nokogiri not installed. Please run `gem install --user-install nokogiri` or `sudo gem install nokogiri`.'
+      Process.exit 1
+    end
+
+    @links = []
+    @baseuri = (baseurl ? URI::parse(baseurl) : nil)
+    @section_level = 0
+    @encoding = str.encoding
+    @markdown = output_for(Nokogiri::HTML(str, baseurl).root).gsub(/\n+/, "\n")
+  end
+
+  def to_s
+    i = 0
+    @markdown.to_s + "\n\n" + @links.map {|link|
+      i += 1
+      "[#{i}]: #{link[:href]}" + (link[:title] ? " (#{link[:title]})" : '')
+    }.join("\n")
+  end
+
+  def output_for_children(node)
+    node.children.map {|el|
+      output_for(el)
+    }.join
+  end
+
+  def add_link(link)
+    if @baseuri
+      begin
+        link[:href] = URI::parse(link[:href])
+      rescue Exception
+        link[:href] = URI::parse('')
+      end
+      link[:href].scheme = @baseuri.scheme unless link[:href].scheme
+      unless link[:href].opaque
+        link[:href].host = @baseuri.host unless link[:href].host
+        link[:href].path = @baseuri.path.to_s + '/' + link[:href].path.to_s if link[:href].path.to_s[0] != '/'
+      end
+      link[:href] = link[:href].to_s
+    end
+    @links.each_with_index {|l, i|
+      if l[:href] == link[:href]
+        return i+1
+      end
+    }
+    @links << link
+    @links.length
+  end
+
+  def wrap(str)
+    return str if str =~ /\n/
+    out = []
+    line = []
+    str.split(/[ \t]+/).each {|word|
+      line << word
+      if line.join(' ').length >= 74
+        out << line.join(' ') << " \n"
+        line = []
+      end
+    }
+    out << line.join(' ') + (str[-1..-1] =~ /[ \t\n]/ ? str[-1..-1] : '')
+    out.join
+  end
+
+  def output_for(node)
+    case node.name
+    when 'head', 'style', 'script'
+      ''
+    when 'br'
+      "  \n"
+    when 'p', 'div'
+      "\n\n#{wrap(output_for_children(node))}\n\n"
+    when 'section', 'article'
+      @section_level += 1
+      o = "\n\n----\n\n#{output_for_children(node)}\n\n"
+      @section_level -= 1
+      o
+    when /h(\d+)/
+      "\n\n" + ('#'*($1.to_i+@section_level) + ' ' + output_for_children(node)) + "\n\n"
+    when 'blockquote'
+      @section_level += 1
+      o = "\n\n> #{wrap(output_for_children(node)).gsub(/\n/, "\n> ")}\n\n".gsub(/> \n(> \n)+/, "> \n")
+      @section_level -= 1
+      o
+    when 'ul'
+      "\n\n" + node.children.map do |el|
+        next if el.name == 'text'
+
+        "* #{output_for_children(el).gsub(/^(\t)|(    )/, "\t\t").gsub(/^>/, "\t>")}\n"
+      end.join + "\n\n"
+    when 'ol'
+      i = 0
+      "\n\n" + node.children.map { |el|
+        next if el.name == 'text'
+
+        i += 1
+        "#{i}. #{output_for_children(el).gsub(/^(\t)|(    )/, "\t\t").gsub(/^>/, "\t>")}\n"
+      }.join + "\n\n"
+    when 'pre', 'code'
+      block = "\t#{wrap(output_for_children(node)).gsub(/\n/, "\n\t")}"
+      if block.count("\n") < 1
+        "`#{output_for_children(node)}`"
+      else
+        block
+      end
+    when 'hr'
+      "\n\n----\n\n"
+    when 'a', 'link'
+      link = { href: node['href'], title: node['title'] }
+      "[#{output_for_children(node).gsub("\n", ' ')}][#{add_link(link)}]"
+    when 'img'
+      link = { href: node['src'], title: node['title'] }
+      "![#{node['alt']}][#{add_link(link)}]"
+    when 'video', 'audio', 'embed'
+      link = { href: node['src'], title: node['title'] }
+      "[#{output_for_children(node).gsub("\n", ' ')}][#{add_link(link)}]"
+    when 'object'
+      link = { href: node['data'], title: node['title'] }
+      "[#{output_for_children(node).gsub("\n", ' ')}][#{add_link(link)}]"
+    when 'i', 'em', 'u'
+      "_#{output_for_children(node)}_"
+    when 'b', 'strong'
+      "**#{output_for_children(node)}**"
+    # Tables are not part of Markdown, so we output WikiCreole
+    when 'tr'
+      if node.children.select { |c| c.name == 'th' }.count.positive?
+        output = node.children.select { |c| c.name == 'th' }
+            .map { |c| output_for(c) }
+            .join.gsub(/\|\|/, '|')
+        align = node.children.select { |c| c.name == 'th' }
+            .map { |c| ':---|' }
+            .join
+        "#{output}\n|#{align}"
+      else
+        node.children.select { |c| c.name == 'th' || c.name == 'td' }
+            .map { |c| output_for(c) }
+            .join.gsub(/\|\|/, '|')
+      end
+    when 'th', 'td'
+      "|#{node.text.gsub(/\n+/, ' ')}|"
+    when 'text'
+      # Sometimes Nokogiri lies. Force the encoding back to what we know it is
+      if (c = node.content.force_encoding(@encoding)) =~ /\S/
+        c.gsub!(/\n\n+/, '<$PreserveDouble$>')
+        c.gsub!(/\s+/, ' ')
+        c.gsub(/<\$PreserveDouble\$>/, "\n\n")
+      else
+        c
+      end
+    else
+      wrap(output_for_children(node))
+    end
+  end
+end
+
 class Confluence2MD
   # Preference to delete output directories
   attr_writer :clean_dirs
@@ -27,18 +189,21 @@ class Confluence2MD
   attr_writer :fix_headers
   # Preference to fix hierarchy
   attr_writer :fix_hierarchy
+  # Preference to fix tables
+  attr_writer :fix_tables
   # VERSION number
   attr_reader :version
 
   def initialize
-    @strip_meta = false
-    @strip_emoji = true
     @clean_dirs = false
-    @include_source = false
-    @update_links = true
-    @rename_files = true
     @fix_headers = true
     @fix_hierarchy = true
+    @fix_tables = false
+    @include_source = false
+    @rename_files = true
+    @strip_emoji = true
+    @strip_meta = false
+    @update_links = true
     @version = get_version
   end
 
@@ -85,6 +250,7 @@ class Confluence2MD
       res = `pandoc --wrap=none --extract-media markdown/images -f html -t markdown_strict+rebase_relative_paths "#{stripped}"`
       warn "#{html} => #{markdown}"
       res = "#{res}\n\n<!--Source: #{html}-->\n" if @include_source
+      res = res.fix_tables if @fix_tables
 
       res.relative_paths!
       res.strip_comments!
@@ -134,6 +300,7 @@ class Confluence2MD
 
     res = `echo #{Shellwords.escape(content)} | pandoc --wrap=none --extract-media images -f html -t markdown_strict+rebase_relative_paths`
     res = "#{res}\n\n<!--Source: #{html}-->\n" if @include_source
+    res = res.fix_tables if @fix_tables
     res.relative_paths.strip_comments
   end
 
@@ -152,6 +319,7 @@ class Confluence2MD
     input = input.fix_hierarchy if @fix_hierarchy
 
     res = `echo #{Shellwords.escape(input)} | pandoc --wrap=none --extract-media images -f html -t markdown_strict+rebase_relative_paths`
+    res = res.fix_tables if @fix_tables
     res.relative_paths.strip_comments
   end
 
@@ -273,6 +441,11 @@ class Confluence2MD
       end
     end
 
+    ##
+    ## Adjust header levels so there's no jump greater than 1
+    ##
+    ## @return     Content with adjusted headers
+    ##
     def fix_hierarchy
       headers = to_enum(:scan, %r{<h([1-6]).*?>(.*?)</h\1>}m).map { Regexp.last_match }
       content = dup
@@ -289,6 +462,35 @@ class Confluence2MD
       end
 
       content
+    end
+
+    ##
+    ## Use nokogiri to convert tables
+    ##
+    ## @return     Content with tables markdownified
+    ##
+    def fix_tables
+      gsub(%r{<table.*?>.*?</table>}m) do
+        m = Regexp.last_match
+        HTML2Markdown.new(m[0]).to_s.fix_indentation
+      end
+    end
+
+    def fix_indentation
+      return self unless strip =~ (/^\s+\S/)
+      out = []
+      lines = split(/\n/)
+      lines.delete_if { |l| l.strip.empty? }
+      indent = lines[0].match(/^(\s*)\S/)[1]
+      indent ||= ''
+
+      lines.each do |line|
+        next if line.strip.empty?
+
+        out << line.sub(/^\s*/, indent)
+      end
+
+      "\n#{out.join("\n")}\n"
     end
 
     ##
@@ -315,12 +517,16 @@ class Confluence2MD
       content.gsub!(%r{<img.*? data-src="(.*?)".*?/?>}m, '<img src="\1">')
       # Remove confluenceTd from tables
       content.gsub!(/ class="confluenceTd" /, '')
+      # Convert <br></strong> to <strong><br>
+      content.gsub!(%r{<br/></strong>}, '</strong><br/>')
       # Remove zero-width spaces and empty spans
       content.gsub!(%r{<span>\u00A0</span>}, ' ')
       content.gsub!(/\u00A0/, ' ')
       content.gsub!(%r{<span> *</span>}, ' ')
       # Remove squares from lists
       content.gsub!(/■/, '')
+      # remove empty tags
+      # content.gsub!(%r{<(\S+).*?>([\n\s]*?)</\1>}, '\2')
       content
     end
 
@@ -405,6 +611,7 @@ options = {
   clean_dirs: false,
   fix_headers: true,
   fix_hierarchy: true,
+  fix_tables: false,
   rename_files: true,
   source: false,
   strip_emoji: true,
@@ -434,6 +641,10 @@ opt_parser = OptionParser.new do |opt|
 
   opt.on('-o', '--[no-]fix-hierarchy', 'Fix header nesting order (default true)') do |option|
     options[:fix_hierarchy] = option
+  end
+
+  opt.on('-t', '--[no-]fix-tables', 'Convert tables to Markdown (default false)') do |option|
+    options[:fix_tables] = option
   end
 
   opt.on('-e', '--[no-]strip-emoji', 'Strip emoji (default true)') do |option|
@@ -470,6 +681,7 @@ c2m.update_links = options[:update_links]
 c2m.rename_files = options[:rename_files]
 c2m.fix_headers = options[:fix_headers]
 c2m.fix_hierarchy = options[:fix_hierarchy]
+c2m.fix_tables = options[:fix_tables]
 
 # If a single file is passed as an argument, process just that file
 if ARGV.count.positive?
