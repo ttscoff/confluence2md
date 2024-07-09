@@ -86,7 +86,7 @@ class HTML2Markdown
     when 'head', 'style', 'script'
       ''
     when 'br'
-      "  \n"
+      ' '
     when 'p', 'div'
       "\n\n#{wrap(output_for_children(node))}\n\n"
     when 'section', 'article'
@@ -137,9 +137,9 @@ class HTML2Markdown
       link = { href: node['data'], title: node['title'] }
       "[#{output_for_children(node).gsub("\n", ' ')}][#{add_link(link)}]"
     when 'i', 'em', 'u'
-      "_#{output_for_children(node)}_"
+      "_#{node.text.sub(/(\s*)?$/, '_\1')}"
     when 'b', 'strong'
-      "**#{output_for_children(node)}**"
+      "**#{node.text.sub(/(\s*)?$/, '**\1')}"
     # Tables are not part of Markdown, so we output WikiCreole
     when 'tr'
       if node.children.select { |c| c.name == 'th' }.count.positive?
@@ -156,13 +156,13 @@ class HTML2Markdown
             .join.gsub(/\|\|/, '|')
       end
     when 'th', 'td'
-      "|#{node.text.gsub(/\n+/, ' ')}|"
+      "|#{output_for_children(node).strip.gsub(/\n+/, '<br/>')}|"
     when 'text'
       # Sometimes Nokogiri lies. Force the encoding back to what we know it is
       if (c = node.content.force_encoding(@encoding)) =~ /\S/
-        c.gsub!(/\n\n+/, '<$PreserveDouble$>')
-        c.gsub!(/\s+/, ' ')
-        c.gsub(/<\$PreserveDouble\$>/, "\n\n")
+        c.gsub(/\n\n+/, '<$PreserveDouble$>')
+         .gsub(/\s+/, ' ')
+         .gsub(/<\$PreserveDouble\$>/, "\n\n")
       else
         c
       end
@@ -172,39 +172,33 @@ class HTML2Markdown
   end
 end
 
+# Main Confluence to Markdown class
 class Confluence2MD
-  # Preference to delete output directories
-  attr_writer :clean_dirs
-  # Preference to strip metadata
-  attr_writer :strip_meta
-  # Preference to strip emoji
-  attr_writer :strip_emoji
-  # Preference to rename files to title slug
-  attr_writer :rename_files
-  # Preference to update local links to markdown slugs
-  attr_writer :update_links
-  # Preference to include source comment in markdown output
-  attr_writer :include_source
-  # Preference to fix headers
-  attr_writer :fix_headers
-  # Preference to fix hierarchy
-  attr_writer :fix_hierarchy
-  # Preference to fix tables
-  attr_writer :fix_tables
   # VERSION number
   attr_reader :version
 
-  def initialize
-    @clean_dirs = false
-    @fix_headers = true
-    @fix_hierarchy = true
-    @fix_tables = false
-    @include_source = false
-    @rename_files = true
-    @strip_emoji = true
-    @strip_meta = false
-    @update_links = true
-    @version = get_version
+  def initialize(options = {})
+    defaults = {
+      clean_dirs: false,
+      fix_headers: true,
+      fix_hierarchy: true,
+      fix_tables: false,
+      include_source: false,
+      rename_files: true,
+      strip_emoji: true,
+      strip_meta: false,
+      update_links: true
+    }
+    @options = defaults.merge(options)
+  end
+
+  def pandoc_options(additional)
+    additional = [additional] if additional.is_a?(String)
+    [
+      '--wrap=none',
+      '-f html',
+      '-t markdown_strict+rebase_relative_paths'
+    ].concat(additional).join(' ')
   end
 
   ##
@@ -217,7 +211,7 @@ class Confluence2MD
   ## output, but I see that as the only way to make this work.
   ##
   def all_html
-    if @clean_dirs
+    if @options[:clean_dirs]
       # Clear out previous runs
       FileUtils.rm_f('stripped') if File.exist?('stripped')
       FileUtils.rm_f('markdown') if File.exist?('markdown')
@@ -232,25 +226,26 @@ class Confluence2MD
       basename = File.basename(html, '.html')
       stripped = File.join('stripped', "#{basename}.html")
 
-      markdown = if @rename_files
-                   title = content.match(%r{<title>(.*?)</title>}m)[1].sub(/^.*? : /, '').sub(/👓/, '').sub(/copy of /i, '')
+      markdown = if @options[:rename_files]
+                   title = content.match(%r{<title>(.*?)</title>}m)[1]
+                                  .sub(/^.*? : /, '').sub(/👓/, '').sub(/copy of /i, '')
                    File.join('markdown', "#{title.slugify}.md")
                  else
                    File.join('markdown', "#{basename}.md")
                  end
 
-      content = content.strip_meta if @strip_meta
+      content = content.strip_meta if @options[:strip_meta]
       content = content.cleanup
-      content = content.strip_emoji if @strip_emoji
-      content = content.fix_headers if @fix_headers
-      content = content.fix_hierarchy if @fix_hierarchy
+      content = content.strip_emoji if @options[:strip_emoji]
+      content = content.fix_headers if @options[:fix_headers]
+      content = content.fix_hierarchy if @options[:fix_hierarchy]
 
       File.open(stripped, 'w') { |f| f.puts content }
 
-      res = `pandoc --wrap=none --extract-media markdown/images -f html -t markdown_strict+rebase_relative_paths "#{stripped}"`
+      res = `pandoc #{pandoc_options('--extract-media markdown/images')} "#{stripped}"`
       warn "#{html} => #{markdown}"
-      res = "#{res}\n\n<!--Source: #{html}-->\n" if @include_source
-      res = res.fix_tables if @fix_tables
+      res = "#{res}\n\n<!--Source: #{html}-->\n" if @options[:include_source]
+      res = res.fix_tables if @options[:fix_tables]
 
       res.relative_paths!
       res.strip_comments!
@@ -261,7 +256,7 @@ class Confluence2MD
     end
 
     # Update local HTML links to Markdown filename
-    update_links(index_h) if @rename_files && @update_links
+    update_links(index_h) if @options[:rename_files] && @options[:update_links]
     # Delete interim HTML directory
     FileUtils.rm_f('stripped')
   end
@@ -292,16 +287,30 @@ class Confluence2MD
   def single_file(html)
     content = IO.read(html)
 
-    content = content.strip_meta if @strip_meta
-    content = content.cleanup
-    content = content.strip_emoji if @strip_emoji
-    content = content.fix_headers if @fix_headers
-    content = content.fix_hierarchy if @fix_hierarchy
+    markdown = if @options[:rename_files]
+                 title = content.match(%r{<title>(.*?)</title>}m)[1]
+                                .sub(/^.*? : /, '').sub(/👓/, '').sub(/copy of /i, '')
+                 "#{title.slugify}.md"
+               else
+                 nil
+               end
 
-    res = `echo #{Shellwords.escape(content)} | pandoc --wrap=none --extract-media images -f html -t markdown_strict+rebase_relative_paths`
-    res = "#{res}\n\n<!--Source: #{html}-->\n" if @include_source
-    res = res.fix_tables if @fix_tables
-    res.relative_paths.strip_comments
+    content = content.strip_meta if @options[:strip_meta]
+    content = content.cleanup
+    content = content.strip_emoji if @options[:strip_emoji]
+    content = content.fix_headers if @options[:fix_headers]
+    content = content.fix_hierarchy if @options[:fix_hierarchy]
+
+    res = `echo #{Shellwords.escape(content)} | pandoc #{pandoc_options('--extract-media images')}`
+    res = "#{res}\n\n<!--Source: #{html}-->\n" if @options[:include_source]
+    res = res.fix_tables if @options[:fix_tables]
+    if markdown
+      warn "#{html} => #{markdown}"
+      File.open(markdown, 'w') { |f| f.puts res.relative_paths.strip_comments }
+      return nil
+    else
+      return res.relative_paths.strip_comments
+    end
   end
 
   ##
@@ -311,15 +320,15 @@ class Confluence2MD
   ##
   ## @return     [String] Markdown output
   ##
-  def handle_stdin(input)
-    input = input.strip_meta if @strip_meta
-    input = input.cleanup
-    input = input.strip_emoji if @strip_emoji
-    input = input.fix_headers if @fix_headers
-    input = input.fix_hierarchy if @fix_hierarchy
+  def handle_stdin(content)
+    content = content.strip_meta if @options[:strip_meta]
+    content = content.cleanup
+    content = content.strip_emoji if @options[:strip_emoji]
+    content = content.fix_headers if @options[:fix_headers]
+    content = content.fix_hierarchy if @options[:fix_hierarchy]
 
-    res = `echo #{Shellwords.escape(input)} | pandoc --wrap=none --extract-media images -f html -t markdown_strict+rebase_relative_paths`
-    res = res.fix_tables if @fix_tables
+    res = `echo #{Shellwords.escape(content)} | pandoc #{pandoc_options('--extract-media images')}`
+    res = res.fix_tables if @options[:fix_tables]
     res.relative_paths.strip_comments
   end
 
@@ -517,8 +526,12 @@ class Confluence2MD
       content.gsub!(%r{<img.*? data-src="(.*?)".*?/?>}m, '<img src="\1">')
       # Remove confluenceTd from tables
       content.gsub!(/ class="confluenceTd" /, '')
+      # Remove emphasis tags around line breaks
+      content.gsub!(%r{<(em|strong|b|u|i)><br/></\1>}m, '<br/>')
+      # Remove empty emphasis tags
+      content.gsub!(%r{<(em|strong|b|u|i)>\s*?</\1>}m, '')
       # Convert <br></strong> to <strong><br>
-      content.gsub!(%r{<br/></strong>}, '</strong><br/>')
+      content.gsub!(%r{<br/></strong>}m, '</strong><br/>')
       # Remove zero-width spaces and empty spans
       content.gsub!(%r{<span>\u00A0</span>}, ' ')
       content.gsub!(/\u00A0/, ' ')
@@ -613,7 +626,7 @@ options = {
   fix_hierarchy: true,
   fix_tables: false,
   rename_files: true,
-  source: false,
+  include_source: false,
   strip_emoji: true,
   strip_meta: false,
   update_links: true
@@ -621,8 +634,10 @@ options = {
 
 opt_parser = OptionParser.new do |opt|
   opt.banner = <<~EOBANNER
-    Run in a folder full of HTML files, or pass a single HTML file as argument"
-    Usage: #{File.basename(__FILE__)} [OPTIONS] [FILE]
+    Run in a folder full of HTML files, or pass a single HTML file as argument.
+    If passing a single HTML file, optionally specify an output file as second argument.
+
+    Usage: #{File.basename(__FILE__)} [OPTIONS] [FILE [OUTPUT_FILE]]
   EOBANNER
   opt.separator  ''
   opt.separator  'Options:'
@@ -655,8 +670,12 @@ opt_parser = OptionParser.new do |opt|
     options[:rename_files] = option
   end
 
+  opt.on('--stdout', 'When operating on single file, output to STDOUT instead of filename') do
+    options[:rename_files] = false
+  end
+
   opt.on('--[no-]source', 'Include an HTML comment with name of original HTML file (default false)') do |option|
-    options[:source] = option
+    options[:include_source] = option
   end
 
   opt.on('--[no-]update-links', 'Update links to local files (default true)') do |option|
@@ -672,20 +691,19 @@ end
 
 opt_parser.parse!
 
-c2m = Confluence2MD.new
-c2m.strip_meta = options[:strip_meta]
-c2m.strip_emoji = options[:strip_emoji]
-c2m.clean_dirs = options[:clean_dirs]
-c2m.include_source = options[:source]
-c2m.update_links = options[:update_links]
-c2m.rename_files = options[:rename_files]
-c2m.fix_headers = options[:fix_headers]
-c2m.fix_hierarchy = options[:fix_hierarchy]
-c2m.fix_tables = options[:fix_tables]
+c2m = Confluence2MD.new(options)
 
 # If a single file is passed as an argument, process just that file
 if ARGV.count.positive?
-  puts c2m.single_file(File.expand_path(ARGV[0]))
+  html = File.expand_path(ARGV[0])
+  res = c2m.single_file(html)
+  if res && ARGV[1]
+    markdown = File.expand_path(ARGV[1])
+    warn "#{html} => #{markdown}"
+    File.open(markdown, 'w') { |f| f.puts res }
+  elsif res
+    puts res
+  end
 # If text is piped in, process STDIN
 elsif $stdin.stat.size.positive?
   input = $stdin.read.force_encoding('utf-8')
