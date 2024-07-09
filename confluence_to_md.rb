@@ -511,6 +511,16 @@ class Confluence2MD
     ##
     def cleanup
       content = dup
+      # admonitions
+      content.gsub!(%r{<div.*?confluence-information-macro-(.*?)".*?>(.*?)</div>}m) do
+        m = Regexp.last_match
+        if m[1] =~ /tip/
+          m[2].sub(%r{<p .*?conf-macro-render.*?>(.*?)</p>}, '<p><em>\1</em></p>')
+        else
+          m[2].sub(%r{<p .*?conf-macro-render.*?>(.*?)</p>}, '<p><strong>\1</strong></p>')
+        end
+      end
+
       # delete div, section, and span tags (preserve content)
       content.gsub!(%r{</?div.*?>}m, '')
       content.gsub!(%r{</?section.*?>}m, '')
