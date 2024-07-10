@@ -365,7 +365,7 @@ class Confluence2MD
 
       # dingbats
       regex = /[\u{2702}-\u{27b0}]/
-      clean.gsub(regex, '')
+      clean = clean.gsub(regex, '')
     end
 
     ##
@@ -511,6 +511,9 @@ class Confluence2MD
     ##
     def cleanup
       content = dup
+      # Checkmarks
+      content.gsub!(%r{<span class="emoji">✔️</span>}, '&#10003;')
+
       # admonitions
       content.gsub!(%r{<div.*?confluence-information-macro-(.*?)".*?>(.*?)</div>}m) do
         m = Regexp.last_match
