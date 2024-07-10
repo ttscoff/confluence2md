@@ -346,10 +346,14 @@ class Confluence2MD
     ##
     ## Remove emojis from output
     ##
+    ## Preserves: checkmark emoji
+    ##
     ## @return     [String] string with emojis stripped
     ##
     def strip_emoji
       text = dup.force_encoding('utf-8').encode
+
+      clean = text.gsub(%r{<span class="emoji">✔️</span>}, '%%CHECKMARK%%')
 
       # symbols & pics
       regex = /[\u{1f300}-\u{1f5ff}]/
@@ -365,7 +369,9 @@ class Confluence2MD
 
       # dingbats
       regex = /[\u{2702}-\u{27b0}]/
-      clean.gsub(regex, '')
+      clean = clean.gsub(regex, '')
+
+      clean.gsub(/%%CHECKMARK%%/, '✔️ ')
     end
 
     ##
