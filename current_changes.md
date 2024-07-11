@@ -1,9 +1,9 @@
-1.0.11
+1.0.12
 
-confluence2md 1.0.11
+confluence2md 1.0.12
 -------------------------
 
-#### IMPROVED
+#### FIXED
 
-- Preserve checkmark symbol when stripping emoji
+- Admonition regex was too greedy
 
