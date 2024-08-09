@@ -1,3 +1,10 @@
+confluence2md 1.0.13
+-------------------------
+
+#### IMPROVED
+
+- Flatten attachments folder to images folder if it exists
+
 confluence2md 1.0.12
 -------------------------
 
