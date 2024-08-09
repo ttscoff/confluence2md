@@ -202,6 +202,25 @@ class Confluence2MD
   end
 
   ##
+  ## Flatten the attachments folder and move contents to images/
+  ##
+  def flatten_attachments
+    return unless File.directory?('attachments')
+
+    copied = 0
+
+    Dir.glob('**/*', base: 'attachments').each do |file|
+      next unless file =~ /(png|jpe?g|gif|pdf|svg)$/
+
+      warn "Copying #{file} to #{File.join('markdown/images', File.basename(file))}"
+      FileUtils.cp file, File.join('markdown/images', File.basename(file))
+      copied += 1
+    end
+
+    warn "Copied #{copied} files from attachments to images"
+  end
+
+  ##
   ## Convert all HTML files in current directory to Markdown. Creates
   ## directories for stripped HTML and markdown output, with subdirectory for
   ## extracted images.
@@ -218,6 +237,7 @@ class Confluence2MD
     end
     FileUtils.mkdir_p('stripped')
     FileUtils.mkdir_p('markdown/images')
+    flatten_attachments
 
     index_h = {}
 
