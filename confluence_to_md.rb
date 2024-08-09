@@ -189,6 +189,7 @@ class Confluence2MD
       strip_meta: false,
       update_links: true
     }
+    @version = get_version
     @options = defaults.merge(options)
   end
 
@@ -208,9 +209,13 @@ class Confluence2MD
     return unless File.directory?('attachments')
 
     copied = 0
+    base = File.expand_path('attachments')
 
-    Dir.glob('**/*', base: 'attachments').each do |file|
+    Dir.glob('**/*', base: base).each do |file|
       next unless file =~ /(png|jpe?g|gif|pdf|svg)$/
+
+      file = File.join(base, file)
+
 
       warn "Copying #{file} to #{File.join('markdown/images', File.basename(file))}"
       FileUtils.cp file, File.join('markdown/images', File.basename(file))
