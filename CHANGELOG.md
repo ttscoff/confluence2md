@@ -1,3 +1,10 @@
+confluence2md 1.0.14
+-------------------------
+
+#### FIXED
+
+- Attachments path
+
 confluence2md 1.0.13
 -------------------------
 

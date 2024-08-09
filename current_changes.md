@@ -1,9 +1,9 @@
-1.0.13
+1.0.14
 
-confluence2md 1.0.13
+confluence2md 1.0.14
 -------------------------
 
-#### IMPROVED
+#### FIXED
 
-- Flatten attachments folder to images folder if it exists
+- Attachments path
 
