@@ -535,12 +535,13 @@ class Confluence2MD
       content.gsub!(%r{<span class="emoji">✔️</span>}, '&#10003;')
 
       # admonitions
-      content.gsub!(%r{<div.*?confluence-information-macro-(.*?)".*?>(.*?)</div>}m) do
+
+      content.gsub!(%r{<div class="confluence-information-macro confluence-information-macro-(.*?)"><p class="title conf-macro-render">(.*?)</p>}m) do
         m = Regexp.last_match
         if m[1] =~ /tip/
-          m[2].sub(%r{<p .*?conf-macro-render.*?>(.*?)</p>}, '<p><em>\1</em></p>')
+          "<p><em>#{m[2]}:</em></p>"
         else
-          m[2].sub(%r{<p .*?conf-macro-render.*?>(.*?)</p>}, '<p><strong>\1</strong></p>')
+          "<p><strong>#{m[2]}:</strong></p>"
         end
       end
 
