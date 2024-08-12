@@ -190,6 +190,14 @@ class Confluence2MD
     @options = defaults.merge(options)
   end
 
+  ##
+  ## Pandoc options
+  ##
+  ## @param      additional  [Array] array of additional
+  ##                         options
+  ##
+  ## @return     [String] all options as a command line string
+  ##
   def pandoc_options(additional)
     additional = [additional] if additional.is_a?(String)
     [
@@ -197,6 +205,26 @@ class Confluence2MD
       '-f html',
       '-t markdown_strict+rebase_relative_paths'
     ].concat(additional).join(' ')
+  end
+
+  ##
+  ## Copy attachments folder to markdown/
+  ##
+  def copy_attachments
+    target = File.expand_path('attachments')
+
+    unless File.directory?(target)
+      warn "Attachments directory not found #{target}"
+      target = File.expand_path('images/attachments')
+    end
+
+    unless File.directory?(target)
+      warn "Attachments directory not found #{target}"
+      return
+    end
+
+    FileUtils.cp_r(target, markdown_dir)
+    warn "Copied #{target} to #{markdown_dir}"
   end
 
   ##
@@ -256,7 +284,7 @@ class Confluence2MD
     if @options[:flatten_attachments]
       flatten_attachments
     else
-      FileUtils.cp_r(File.expand_path('images/attachments'), markdown_dir)
+      copy_attachments
     end
 
     index_h = {}
