@@ -744,25 +744,24 @@ opt_parser = OptionParser.new do |opt|
     options[:fix_tables] = option
   end
 
+  opt.on('--[no-]flatten-images', 'Flatten attachments folder and update links (default true)') do |option|
+    options[:flatten_attachments] = option
+  end
 
   opt.on('--[no-]rename', 'Rename output files based on page title (default true)') do |option|
     options[:rename_files] = option
-  end
-
-  opt.on('--stdout', 'When operating on single file, output to STDOUT instead of filename') do
-    options[:rename_files] = false
   end
 
   opt.on('--[no-]source', 'Include an HTML comment with name of original HTML file (default false)') do |option|
     options[:include_source] = option
   end
 
-  opt.on('--[no-]update-links', 'Update links to local files (default true)') do |option|
-    options[:update_links] = option
+  opt.on('--stdout', 'When operating on single file, output to STDOUT instead of filename') do
+    options[:rename_files] = false
   end
 
-  opt.on('--[no-]flatten-images', 'Flatten attachments folder and update links (default true)') do |option|
-    options[:flatten_attachments] = option
+  opt.on('--[no-]update-links', 'Update links to local files (default true)') do |option|
+    options[:update_links] = option
   end
 
   opt.on('-v', '--version', 'Display version number') do
