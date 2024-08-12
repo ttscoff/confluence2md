@@ -9,6 +9,7 @@ require 'fileutils'
 require 'shellwords'
 require 'optparse'
 require 'erb'
+require 'cgi'
 
 ##
 ## Class for converting HTML to Markdown using Nokogiri
@@ -506,7 +507,7 @@ class Confluence2MD
       gsub(%r{<table.*?>.*?</table>}m) do
         m = Regexp.last_match
         HTML2Markdown.new(m[0]).to_s.fix_indentation
-      end
+      end.gsub(/\|\n\[/, "|\n\n[")
     end
 
     def fix_indentation
@@ -558,7 +559,7 @@ class Confluence2MD
       # Delete icons
       content.gsub!(/<img class="icon".*?>/m, '')
       # Convert embedded images to easily-matched syntax for later replacement
-      content.gsub!(%r{<img.*class="confluence-embedded-image.*?".*title="(.*?)">}m, "\n%image: \\1\n")
+      content.gsub!(/<img.*class="confluence-embedded-image.*?".*?src="(.*?)".*?>/m, '%image: \1')
       # Rewrite img tags with just src, converting data-src to src
       content.gsub!(%r{<img.*? src="(.*?)".*?/?>}m, '<img src="\1">')
       content.gsub!(%r{<img.*? data-src="(.*?)".*?/?>}m, '<img src="\1">')
@@ -629,8 +630,9 @@ class Confluence2MD
       gsub(/%image: (.*?)$/) do
         # URL-encode image path
         m = Regexp.last_match
-        url = ERB::Util.url_encode(m[1])
-        "![](#{url})"
+        path = m[1].sub(%r{^attachments/(?:.*?)/(.*?(?:png|jpe?g|gif|pdf))}, 'images/\1')
+
+        "![](#{path})"
       end
     end
 
