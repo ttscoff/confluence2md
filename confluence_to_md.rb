@@ -175,9 +175,6 @@ end
 
 # Main Confluence to Markdown class
 class Confluence2MD
-  # VERSION number
-  attr_reader :version
-
   def initialize(options = {})
     defaults = {
       clean_dirs: false,
@@ -190,7 +187,6 @@ class Confluence2MD
       strip_meta: false,
       update_links: true
     }
-    @version = get_version
     @options = defaults.merge(options)
   end
 
@@ -259,6 +255,8 @@ class Confluence2MD
 
     if @options[:flatten_attachments]
       flatten_attachments
+    else
+      FileUtils.cp_r(File.expand_path('images/attachments'), markdown_dir)
     end
 
     index_h = {}
@@ -560,7 +558,9 @@ class Confluence2MD
 
       # admonitions
 
-      content.gsub!(%r{<div class="confluence-information-macro confluence-information-macro-(.*?)"><p class="title conf-macro-render">(.*?)</p>}m) do
+      content.gsub!(%r{(?mix)
+        <div\sclass="confluence-information-macro\sconfluence-information-macro-(.*?)">
+        <p\sclass="title\sconf-macro-render">(.*?)</p>}) do
         m = Regexp.last_match
         if m[1] =~ /tip/
           "<p><em>#{m[2]}:</em></p>"
@@ -640,7 +640,6 @@ class Confluence2MD
       replace strip_comments
     end
 
-
     ##
     ## Repoint images to flattened folder
     ##
@@ -684,9 +683,7 @@ class Confluence2MD
     end
   end
 
-  private
-
-  def get_version
+  def version
     version_file = File.join(File.dirname(File.realdirpath(__FILE__)), 'VERSION')
     if File.exist?(version_file)
       version = IO.read(version_file).strip
