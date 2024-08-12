@@ -207,15 +207,24 @@ class Confluence2MD
   ## Flatten the attachments folder and move contents to images/
   ##
   def flatten_attachments
-    return unless File.directory?('images/attachments')
+    target = File.expand_path('attachments')
+
+    unless File.directory?(target)
+      warn "Attachments directory not found #{target}"
+      target = File.expand_path('images/attachments')
+    end
+
+    unless File.directory?(target)
+      warn "Attachments directory not found #{target}"
+      return
+    end
 
     copied = 0
-    base = File.expand_path('images/attachments')
 
-    Dir.glob('**/*', base: base).each do |file|
+    Dir.glob('**/*', base: target).each do |file|
       next unless file =~ /(png|jpe?g|gif|pdf|svg)$/
 
-      file = File.join(base, file)
+      file = File.join(target, file)
 
       warn "Copying #{file} to #{File.join('markdown/images', File.basename(file))}"
       FileUtils.cp file, File.join('markdown/images', File.basename(file))
