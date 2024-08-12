@@ -789,7 +789,12 @@ opt_parser = OptionParser.new do |opt|
     options[:update_links] = option
   end
 
-  opt.on('-v', '--version', 'Display version number') do
+  opt.on_tail('-h', '--help', 'Display help') do
+    puts opt
+    Process.exit 0
+  end
+
+  opt.on_tail('-v', '--version', 'Display version number') do
     c2m = Confluence2MD.new
     puts "#{File.basename(__FILE__)} #{c2m.version}"
     Process.exit 0
