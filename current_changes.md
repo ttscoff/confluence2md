@@ -1,9 +1,10 @@
-1.0.14
+1.0.15
 
-confluence2md 1.0.14
+confluence2md 1.0.15
 -------------------------
 
 #### FIXED
 
-- Attachments path
+- Tables containing links get an extra newline before link definitions
+- Handle /attachements in addition to /images/attachments
 
