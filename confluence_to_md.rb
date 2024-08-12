@@ -244,13 +244,19 @@ class Confluence2MD
   ## output, but I see that as the only way to make this work.
   ##
   def all_html
+    stripped_dir = File.expand_path('stripped')
+    markdown_dir = File.expand_path('markdown')
+
     if @options[:clean_dirs]
+      warn "Cleaning out markdown directories"
+
       # Clear out previous runs
-      FileUtils.rm_f('stripped') if File.exist?('stripped')
-      FileUtils.rm_f('markdown') if File.exist?('markdown')
+      FileUtils.rm_rf(stripped_dir) if File.exist?(stripped_dir)
+      FileUtils.rm_rf(markdown_dir) if File.exist?(markdown_dir)
     end
-    FileUtils.mkdir_p('stripped')
-    FileUtils.mkdir_p('markdown/images')
+    FileUtils.mkdir_p(stripped_dir)
+    FileUtils.mkdir_p(File.join(markdown_dir, 'images'))
+
     flatten_attachments
 
     index_h = {}
@@ -639,10 +645,10 @@ class Confluence2MD
       gsub(/%image: (.*?)$/) do
         # URL-encode image path
         m = Regexp.last_match
-        path = m[1].sub(%r{^attachments/(?:.*?)/(.*?(?:png|jpe?g|gif|pdf))}, 'images/\1')
+        path = m[1].sub(%r{^attachments/(?:\d+)/(.*?(?:png|jpe?g|gif|pdf))}, 'images/\1')
 
         "![](#{path})"
-      end
+      end.gsub(%r{attachments/(?:\d+)/(.*?(?:png|jpe?g|gif|pdf))}, 'images/\1')
     end
 
     ##
