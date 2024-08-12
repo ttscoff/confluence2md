@@ -257,7 +257,9 @@ class Confluence2MD
     FileUtils.mkdir_p(stripped_dir)
     FileUtils.mkdir_p(File.join(markdown_dir, 'images'))
 
-    flatten_attachments
+    if @options[:flatten_attachments]
+      flatten_attachments
+    end
 
     index_h = {}
 
@@ -282,7 +284,7 @@ class Confluence2MD
 
       File.open(stripped, 'w') { |f| f.puts content }
 
-      res = `pandoc #{pandoc_options('--extract-media markdown/images')} "#{stripped}"`
+      res = `pandoc #{pandoc_options('--extract-media markdown/images')} "#{stripped}" 2> /dev/null`
       warn "#{html} => #{markdown}"
       res = "#{res}\n\n<!--Source: #{html}-->\n" if @options[:include_source]
       res = res.fix_tables if @options[:fix_tables]
@@ -290,6 +292,8 @@ class Confluence2MD
       res.relative_paths!
       res.strip_comments!
       res.markdownify_images!
+
+      res.repoint_flattened! if @options[:flatten_attachments]
 
       index_h[File.basename(html)] = File.basename(markdown)
       File.open(markdown, 'w') { |f| f.puts res }
@@ -341,7 +345,7 @@ class Confluence2MD
     content = content.fix_headers if @options[:fix_headers]
     content = content.fix_hierarchy if @options[:fix_hierarchy]
 
-    res = `echo #{Shellwords.escape(content)} | pandoc #{pandoc_options('--extract-media images')}`
+    res = `echo #{Shellwords.escape(content)} | pandoc #{pandoc_options('--extract-media images')} 2> /dev/null`
     res = "#{res}\n\n<!--Source: #{html}-->\n" if @options[:include_source]
     res = res.fix_tables if @options[:fix_tables]
     if markdown
@@ -367,7 +371,7 @@ class Confluence2MD
     content = content.fix_headers if @options[:fix_headers]
     content = content.fix_hierarchy if @options[:fix_hierarchy]
 
-    res = `echo #{Shellwords.escape(content)} | pandoc #{pandoc_options('--extract-media images')}`
+    res = `echo #{Shellwords.escape(content)} | pandoc #{pandoc_options('--extract-media images')} 2> /dev/null`
     res = res.fix_tables if @options[:fix_tables]
     res.relative_paths.strip_comments
   end
@@ -636,6 +640,26 @@ class Confluence2MD
       replace strip_comments
     end
 
+
+    ##
+    ## Repoint images to flattened folder
+    ##
+    ## @return [String] content with /attachments links updated
+    ##
+    def repoint_flattened
+      gsub(%r{attachments/(?:\d+)/(.*?(?:png|jpe?g|gif|pdf))}, 'images/\1')
+    end
+
+    ##
+    ## Destructive version of repoint_flattened
+    ## @see #repoint_flattened
+    ##
+    ## @return [String] content with /attachments links updated
+    ##
+    def repoint_flattened!
+      replace repoint_flattened
+    end
+
     ##
     ## Replace %image with Markdown format
     ##
@@ -645,10 +669,8 @@ class Confluence2MD
       gsub(/%image: (.*?)$/) do
         # URL-encode image path
         m = Regexp.last_match
-        path = m[1].sub(%r{^attachments/(?:\d+)/(.*?(?:png|jpe?g|gif|pdf))}, 'images/\1')
-
-        "![](#{path})"
-      end.gsub(%r{attachments/(?:\d+)/(.*?(?:png|jpe?g|gif|pdf))}, 'images/\1')
+        "![](#{m[1]})"
+      end
     end
 
     ##
@@ -680,6 +702,7 @@ options = {
   fix_headers: true,
   fix_hierarchy: true,
   fix_tables: false,
+  flatten_attachments: true,
   rename_files: true,
   include_source: false,
   strip_emoji: true,
@@ -701,8 +724,8 @@ opt_parser = OptionParser.new do |opt|
     options[:clean_dirs] = true
   end
 
-  opt.on('-s', '--strip-meta', 'Strip Confluence metadata (default false)') do
-    options[:strip_meta] = true
+  opt.on('-e', '--[no-]strip-emoji', 'Strip emoji (default true)') do |option|
+    options[:strip_emoji] = option
   end
 
   opt.on('-f', '--[no-]fix-headers', 'Bump all headers except first h1 (default true)') do |option|
@@ -713,13 +736,14 @@ opt_parser = OptionParser.new do |opt|
     options[:fix_hierarchy] = option
   end
 
+  opt.on('-s', '--strip-meta', 'Strip Confluence metadata (default false)') do
+    options[:strip_meta] = true
+  end
+
   opt.on('-t', '--[no-]fix-tables', 'Convert tables to Markdown (default false)') do |option|
     options[:fix_tables] = option
   end
 
-  opt.on('-e', '--[no-]strip-emoji', 'Strip emoji (default true)') do |option|
-    options[:strip_emoji] = option
-  end
 
   opt.on('--[no-]rename', 'Rename output files based on page title (default true)') do |option|
     options[:rename_files] = option
@@ -735,6 +759,10 @@ opt_parser = OptionParser.new do |opt|
 
   opt.on('--[no-]update-links', 'Update links to local files (default true)') do |option|
     options[:update_links] = option
+  end
+
+  opt.on('--[no-]flatten-images', 'Flatten attachments folder and update links (default true)') do |option|
+    options[:flatten_attachments] = option
   end
 
   opt.on('-v', '--version', 'Display version number') do
