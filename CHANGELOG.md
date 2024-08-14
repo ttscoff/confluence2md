@@ -1,3 +1,10 @@
+confluence2md 1.0.19
+-------------------------
+
+#### FIXED
+
+- Table conversion when body rows contain TH elements
+
 confluence2md 1.0.18
 -------------------------
 
