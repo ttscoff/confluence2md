@@ -115,9 +115,9 @@ class HTML2Markdown
         i += 1
         "#{i}. #{output_for_children(el).gsub(/^(\t)|(    )/, "\t\t").gsub(/^>/, "\t>")}\n"
       }.join + "\n\n"
-    when 'pre', 'code'
+    when 'code'
       block = "\t#{wrap(output_for_children(node)).gsub(/\n/, "\n\t")}"
-      if block.count("\n") < 1
+      if block.count("\n").zero?
         "`#{output_for_children(node)}`"
       else
         block
@@ -142,7 +142,9 @@ class HTML2Markdown
       "**#{node.text.sub(/(\s*)?$/, '**\1')}"
     # Tables are not part of Markdown, so we output WikiCreole
     when 'tr'
-      if node.children.select { |c| c.name == 'th' }.count.positive?
+      ths = node.children.select { |c| c.name == 'th' }
+      tds = node.children.select { |c| c.name == 'td' }
+      if ths.count.positive? && tds.count.zero?
         output = node.children.select { |c| c.name == 'th' }
             .map { |c| output_for(c) }
             .join.gsub(/\|\|/, '|')
