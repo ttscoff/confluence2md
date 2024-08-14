@@ -212,7 +212,7 @@ class Confluence2MD
   ##
   ## Copy attachments folder to markdown/
   ##
-  def copy_attachments
+  def copy_attachments(markdown_dir)
     target = File.expand_path('attachments')
 
     unless File.directory?(target)
@@ -286,7 +286,7 @@ class Confluence2MD
     if @options[:flatten_attachments]
       flatten_attachments
     else
-      copy_attachments
+      copy_attachments(markdown_dir)
     end
 
     index_h = {}
