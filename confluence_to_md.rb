@@ -9,6 +9,7 @@ require 'fileutils'
 require 'shellwords'
 require 'optparse'
 require 'erb'
+require 'cgi'
 
 ##
 ## Class for converting HTML to Markdown using Nokogiri
@@ -176,9 +177,6 @@ end
 
 # Main Confluence to Markdown class
 class Confluence2MD
-  # VERSION number
-  attr_reader :version
-
   def initialize(options = {})
     defaults = {
       clean_dirs: false,
@@ -191,10 +189,17 @@ class Confluence2MD
       strip_meta: false,
       update_links: true
     }
-    @version = get_version
     @options = defaults.merge(options)
   end
 
+  ##
+  ## Pandoc options
+  ##
+  ## @param      additional  [Array] array of additional
+  ##                         options
+  ##
+  ## @return     [String] all options as a command line string
+  ##
   def pandoc_options(additional)
     additional = [additional] if additional.is_a?(String)
     [
@@ -205,18 +210,47 @@ class Confluence2MD
   end
 
   ##
+  ## Copy attachments folder to markdown/
+  ##
+  def copy_attachments
+    target = File.expand_path('attachments')
+
+    unless File.directory?(target)
+      warn "Attachments directory not found #{target}"
+      target = File.expand_path('images/attachments')
+    end
+
+    unless File.directory?(target)
+      warn "Attachments directory not found #{target}"
+      return
+    end
+
+    FileUtils.cp_r(target, markdown_dir)
+    warn "Copied #{target} to #{markdown_dir}"
+  end
+
+  ##
   ## Flatten the attachments folder and move contents to images/
   ##
   def flatten_attachments
-    return unless File.directory?('images/attachments')
+    target = File.expand_path('attachments')
+
+    unless File.directory?(target)
+      warn "Attachments directory not found #{target}"
+      target = File.expand_path('images/attachments')
+    end
+
+    unless File.directory?(target)
+      warn "Attachments directory not found #{target}"
+      return
+    end
 
     copied = 0
-    base = File.expand_path('images/attachments')
 
-    Dir.glob('**/*', base: base).each do |file|
+    Dir.glob('**/*', base: target).each do |file|
       next unless file =~ /(png|jpe?g|gif|pdf|svg)$/
 
-      file = File.join(base, file)
+      file = File.join(target, file)
 
       warn "Copying #{file} to #{File.join('markdown/images', File.basename(file))}"
       FileUtils.cp file, File.join('markdown/images', File.basename(file))
@@ -236,14 +270,24 @@ class Confluence2MD
   ## output, but I see that as the only way to make this work.
   ##
   def all_html
+    stripped_dir = File.expand_path('stripped')
+    markdown_dir = File.expand_path('markdown')
+
     if @options[:clean_dirs]
+      warn "Cleaning out markdown directories"
+
       # Clear out previous runs
-      FileUtils.rm_f('stripped') if File.exist?('stripped')
-      FileUtils.rm_f('markdown') if File.exist?('markdown')
+      FileUtils.rm_rf(stripped_dir) if File.exist?(stripped_dir)
+      FileUtils.rm_rf(markdown_dir) if File.exist?(markdown_dir)
     end
-    FileUtils.mkdir_p('stripped')
-    FileUtils.mkdir_p('markdown/images')
-    flatten_attachments
+    FileUtils.mkdir_p(stripped_dir)
+    FileUtils.mkdir_p(File.join(markdown_dir, 'images'))
+
+    if @options[:flatten_attachments]
+      flatten_attachments
+    else
+      copy_attachments
+    end
 
     index_h = {}
 
@@ -268,7 +312,7 @@ class Confluence2MD
 
       File.open(stripped, 'w') { |f| f.puts content }
 
-      res = `pandoc #{pandoc_options('--extract-media markdown/images')} "#{stripped}"`
+      res = `pandoc #{pandoc_options('--extract-media markdown/images')} "#{stripped}" 2> /dev/null`
       warn "#{html} => #{markdown}"
       res = "#{res}\n\n<!--Source: #{html}-->\n" if @options[:include_source]
       res = res.fix_tables if @options[:fix_tables]
@@ -276,6 +320,8 @@ class Confluence2MD
       res.relative_paths!
       res.strip_comments!
       res.markdownify_images!
+
+      res.repoint_flattened! if @options[:flatten_attachments]
 
       index_h[File.basename(html)] = File.basename(markdown)
       File.open(markdown, 'w') { |f| f.puts res }
@@ -327,7 +373,7 @@ class Confluence2MD
     content = content.fix_headers if @options[:fix_headers]
     content = content.fix_hierarchy if @options[:fix_hierarchy]
 
-    res = `echo #{Shellwords.escape(content)} | pandoc #{pandoc_options('--extract-media images')}`
+    res = `echo #{Shellwords.escape(content)} | pandoc #{pandoc_options('--extract-media images')} 2> /dev/null`
     res = "#{res}\n\n<!--Source: #{html}-->\n" if @options[:include_source]
     res = res.fix_tables if @options[:fix_tables]
     if markdown
@@ -353,7 +399,7 @@ class Confluence2MD
     content = content.fix_headers if @options[:fix_headers]
     content = content.fix_hierarchy if @options[:fix_hierarchy]
 
-    res = `echo #{Shellwords.escape(content)} | pandoc #{pandoc_options('--extract-media images')}`
+    res = `echo #{Shellwords.escape(content)} | pandoc #{pandoc_options('--extract-media images')} 2> /dev/null`
     res = res.fix_tables if @options[:fix_tables]
     res.relative_paths.strip_comments
   end
@@ -508,7 +554,7 @@ class Confluence2MD
       gsub(%r{<table.*?>.*?</table>}m) do
         m = Regexp.last_match
         HTML2Markdown.new(m[0]).to_s.fix_indentation
-      end
+      end.gsub(/\|\n\[/, "|\n\n[")
     end
 
     def fix_indentation
@@ -542,7 +588,9 @@ class Confluence2MD
 
       # admonitions
 
-      content.gsub!(%r{<div class="confluence-information-macro confluence-information-macro-(.*?)"><p class="title conf-macro-render">(.*?)</p>}m) do
+      content.gsub!(%r{(?mix)
+        <div\sclass="confluence-information-macro\sconfluence-information-macro-(.*?)">
+        <p\sclass="title\sconf-macro-render">(.*?)</p>}) do
         m = Regexp.last_match
         if m[1] =~ /tip/
           "<p><em>#{m[2]}:</em></p>"
@@ -560,7 +608,7 @@ class Confluence2MD
       # Delete icons
       content.gsub!(/<img class="icon".*?>/m, '')
       # Convert embedded images to easily-matched syntax for later replacement
-      content.gsub!(%r{<img.*class="confluence-embedded-image.*?".*title="(.*?)">}m, "\n%image: \\1\n")
+      content.gsub!(/<img.*class="confluence-embedded-image.*?".*?src="(.*?)".*?>/m, '%image: \1')
       # Rewrite img tags with just src, converting data-src to src
       content.gsub!(%r{<img.*? src="(.*?)".*?/?>}m, '<img src="\1">')
       content.gsub!(%r{<img.*? data-src="(.*?)".*?/?>}m, '<img src="\1">')
@@ -623,6 +671,25 @@ class Confluence2MD
     end
 
     ##
+    ## Repoint images to flattened folder
+    ##
+    ## @return [String] content with /attachments links updated
+    ##
+    def repoint_flattened
+      gsub(%r{attachments/(?:\d+)/(.*?(?:png|jpe?g|gif|pdf))}, 'images/\1')
+    end
+
+    ##
+    ## Destructive version of repoint_flattened
+    ## @see #repoint_flattened
+    ##
+    ## @return [String] content with /attachments links updated
+    ##
+    def repoint_flattened!
+      replace repoint_flattened
+    end
+
+    ##
     ## Replace %image with Markdown format
     ##
     ## @return     [String] content with markdownified images
@@ -631,8 +698,7 @@ class Confluence2MD
       gsub(/%image: (.*?)$/) do
         # URL-encode image path
         m = Regexp.last_match
-        url = ERB::Util.url_encode(m[1])
-        "![](#{url})"
+        "![](#{m[1]})"
       end
     end
 
@@ -647,9 +713,7 @@ class Confluence2MD
     end
   end
 
-  private
-
-  def get_version
+  def version
     version_file = File.join(File.dirname(File.realdirpath(__FILE__)), 'VERSION')
     if File.exist?(version_file)
       version = IO.read(version_file).strip
@@ -665,6 +729,7 @@ options = {
   fix_headers: true,
   fix_hierarchy: true,
   fix_tables: false,
+  flatten_attachments: true,
   rename_files: true,
   include_source: false,
   strip_emoji: true,
@@ -686,8 +751,8 @@ opt_parser = OptionParser.new do |opt|
     options[:clean_dirs] = true
   end
 
-  opt.on('-s', '--strip-meta', 'Strip Confluence metadata (default false)') do
-    options[:strip_meta] = true
+  opt.on('-e', '--[no-]strip-emoji', 'Strip emoji (default true)') do |option|
+    options[:strip_emoji] = option
   end
 
   opt.on('-f', '--[no-]fix-headers', 'Bump all headers except first h1 (default true)') do |option|
@@ -698,31 +763,40 @@ opt_parser = OptionParser.new do |opt|
     options[:fix_hierarchy] = option
   end
 
+  opt.on('-s', '--strip-meta', 'Strip Confluence metadata (default false)') do
+    options[:strip_meta] = true
+  end
+
   opt.on('-t', '--[no-]fix-tables', 'Convert tables to Markdown (default false)') do |option|
     options[:fix_tables] = option
   end
 
-  opt.on('-e', '--[no-]strip-emoji', 'Strip emoji (default true)') do |option|
-    options[:strip_emoji] = option
+  opt.on('--[no-]flatten-images', 'Flatten attachments folder and update links (default true)') do |option|
+    options[:flatten_attachments] = option
   end
 
   opt.on('--[no-]rename', 'Rename output files based on page title (default true)') do |option|
     options[:rename_files] = option
   end
 
-  opt.on('--stdout', 'When operating on single file, output to STDOUT instead of filename') do
-    options[:rename_files] = false
-  end
-
   opt.on('--[no-]source', 'Include an HTML comment with name of original HTML file (default false)') do |option|
     options[:include_source] = option
+  end
+
+  opt.on('--stdout', 'When operating on single file, output to STDOUT instead of filename') do
+    options[:rename_files] = false
   end
 
   opt.on('--[no-]update-links', 'Update links to local files (default true)') do |option|
     options[:update_links] = option
   end
 
-  opt.on('-v', '--version', 'Display version number') do
+  opt.on_tail('-h', '--help', 'Display help') do
+    puts opt
+    Process.exit 0
+  end
+
+  opt.on_tail('-v', '--version', 'Display version number') do
     c2m = Confluence2MD.new
     puts "#{File.basename(__FILE__)} #{c2m.version}"
     Process.exit 0

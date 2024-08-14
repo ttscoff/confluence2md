@@ -1,3 +1,33 @@
+confluence2md 1.0.18
+-------------------------
+
+#### IMPROVED
+
+- Help output (-h) sorted alphabetically
+- If not flattening attachments (--no-flatten-images), then copy the entire images/attachments folder into the markdown folder
+
+confluence2md 1.0.17
+-------------------------
+
+#### IMPROVED
+
+- Attachment flattening can be disabled with --no-flatten-images
+
+confluence2md 1.0.16
+-------------------------
+
+#### IMPROVED
+
+- Convert all attachments/[..]/[image] references to point to /images folder
+
+confluence2md 1.0.15
+-------------------------
+
+#### FIXED
+
+- Tables containing links get an extra newline before link definitions
+- Handle /attachements in addition to /images/attachments
+
 confluence2md 1.0.14
 -------------------------
 
