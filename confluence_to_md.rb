@@ -9,6 +9,84 @@ require 'fileutils'
 require 'shellwords'
 require 'optparse'
 require 'erb'
+require 'open3'
+##
+## module for terminal output
+##
+module CLI
+  class << self
+    # Enable coloring
+    attr_writer :coloring
+    # Enable debugging
+    attr_writer :debug
+
+    COLORS = {
+      default: 39,
+      black: 30,
+      red: 31,
+      green: 32,
+      yellow: 33,
+      cyan: 36,
+      white: 37
+    }.freeze
+
+    FORMATS = {
+      reset: 0,
+      bold: 1,
+      dark: 2,
+      italic: 3,
+      underline: 4,
+      underscore: 4,
+      blink: 5,
+      rapid_blink: 6,
+      negative: 7
+    }.freeze
+
+    def to_ansi(color, style = [:normal])
+      return '' unless @coloring
+
+      style = [style] unless style.is_a?(Array)
+      prefix = style.map { |s| "#{FORMATS[s.to_sym]};" }.join
+      "\033[#{prefix}#{COLORS[color.to_sym]}m"
+    end
+
+    def reset_line
+      "\033\[A" if @coloring
+    end
+
+    def kill_line
+      "\033\[2K" if @coloring
+    end
+
+    def reset
+      to_ansi(:default, :reset)
+    end
+
+    def white
+      to_ansi(:white, :bold)
+    end
+
+    def debug(message)
+      warn "#{kill_line}#{to_ansi(:white, :dark)}DEBUG: #{message}#{reset}" if @debug
+    end
+
+    def error(message)
+      warn "#{kill_line}#{to_ansi(:red, :bold)}ERROR: #{white}#{message}#{reset}"
+    end
+
+    def alert(message)
+      warn "#{kill_line}#{to_ansi(:yellow, :bold)}ALERT: #{white}#{message}#{reset}"
+    end
+
+    def finished(message)
+      warn "#{kill_line}#{to_ansi(:cyan, :bold)}FINISHED: #{white}#{message}#{reset}"
+    end
+
+    def info(message)
+      warn "#{kill_line}#{white} INFO: #{message}#{reset_line}"
+    end
+  end
+end
 
 ##
 ## Class for converting HTML to Markdown using Nokogiri
@@ -23,7 +101,7 @@ class HTML2Markdown
     end
 
     @links = []
-    @baseuri = (baseurl ? URI::parse(baseurl) : nil)
+    @baseuri = (baseurl ? URI.parse(baseurl) : nil)
     @section_level = 0
     @encoding = str.encoding
     @markdown = output_for(Nokogiri::HTML(str, baseurl).root).gsub(/\n+/, "\n")
@@ -36,10 +114,10 @@ class HTML2Markdown
   ##
   def to_s
     i = 0
-    @markdown.to_s + "\n\n" + @links.map {|link|
+    "#{@markdown}\n\n" + @links.map do |link|
       i += 1
       "[#{i}]: #{link[:href]}" + (link[:title] ? " (#{link[:title]})" : '')
-    }.join("\n")
+    end.join("\n")
   end
 
   ##
@@ -52,9 +130,7 @@ class HTML2Markdown
   ## @return     output of node's children
   ##
   def output_for_children(node)
-    node.children.map {|el|
-      output_for(el)
-    }.join
+    node.children.map { |el| output_for(el) }.join
   end
 
   ##
@@ -67,22 +143,20 @@ class HTML2Markdown
   def add_link(link)
     if @baseuri
       begin
-        link[:href] = URI::parse(link[:href])
-      rescue Exception
-        link[:href] = URI::parse('')
+        link[:href] = URI.parse(link[:href])
+      rescue StandardError
+        link[:href] = URI.parse('')
       end
       link[:href].scheme = @baseuri.scheme unless link[:href].scheme
       unless link[:href].opaque
         link[:href].host = @baseuri.host unless link[:href].host
-        link[:href].path = @baseuri.path.to_s + '/' + link[:href].path.to_s if link[:href].path.to_s[0] != '/'
+        link[:href].path = "#{@baseuri.path}/#{link[:href].path}" if link[:href].path.to_s[0] != '/'
       end
       link[:href] = link[:href].to_s
     end
-    @links.each_with_index {|l, i|
-      if l[:href] == link[:href]
-        return i+1
-      end
-    }
+    @links.each_with_index do |l, i|
+      return i + 1 if l[:href] == link[:href]
+    end
     @links << link
     @links.length
   end
@@ -96,15 +170,16 @@ class HTML2Markdown
   ##
   def wrap(str)
     return str if str =~ /\n/
+
     out = []
     line = []
-    str.split(/[ \t]+/).each {|word|
+    str.split(/[ \t]+/).each do |word|
       line << word
       if line.join(' ').length >= 74
         out << line.join(' ') << " \n"
         line = []
       end
-    }
+    end
     out << line.join(' ') + (str[-1..-1] =~ /[ \t\n]/ ? str[-1..-1] : '')
     out.join
   end
@@ -130,7 +205,7 @@ class HTML2Markdown
       @section_level -= 1
       o
     when /h(\d+)/
-      "\n\n" + ('#'*($1.to_i+@section_level) + ' ' + output_for_children(node)) + "\n\n"
+      "\n\n#{'#' * (Regexp.last_match(1).to_i + @section_level)} #{output_for_children(node)}\n\n"
     when 'blockquote'
       @section_level += 1
       o = "\n\n> #{wrap(output_for_children(node)).gsub(/\n/, "\n> ")}\n\n".gsub(/> \n(> \n)+/, "> \n")
@@ -181,11 +256,11 @@ class HTML2Markdown
       tds = node.children.select { |c| c.name == 'td' }
       if ths.count.positive? && tds.count.zero?
         output = node.children.select { |c| c.name == 'th' }
-            .map { |c| output_for(c) }
-            .join.gsub(/\|\|/, '|')
+                     .map { |c| output_for(c) }
+                     .join.gsub(/\|\|/, '|')
         align = node.children.select { |c| c.name == 'th' }
-            .map { |c| ':---|' }
-            .join
+                    .map { ':---|' }
+                    .join
         "#{output}\n|#{align}"
       else
         node.children.select { |c| c.name == 'th' || c.name == 'td' }
@@ -211,6 +286,8 @@ end
 
 # Main Confluence to Markdown class
 class Confluence2MD
+  include CLI
+
   def initialize(options = {})
     defaults = {
       clean_dirs: false,
@@ -224,6 +301,8 @@ class Confluence2MD
       update_links: true
     }
     @options = defaults.merge(options)
+    CLI.debug = options[:debug] || false
+    CLI.coloring = options[:color] || true
   end
 
   ##
@@ -249,18 +328,14 @@ class Confluence2MD
   def copy_attachments(markdown_dir)
     target = File.expand_path('attachments')
 
+    target = File.expand_path('images/attachments') unless File.directory?(target)
     unless File.directory?(target)
-      warn "Attachments directory not found #{target}"
-      target = File.expand_path('images/attachments')
-    end
-
-    unless File.directory?(target)
-      warn "Attachments directory not found #{target}"
+      CLI.alert "Attachments directory not found #{target}"
       return
     end
 
     FileUtils.cp_r(target, markdown_dir)
-    warn "Copied #{target} to #{markdown_dir}"
+    CLI.info "Copied #{target.trunc_middle(60)} to #{markdown_dir}"
   end
 
   ##
@@ -269,13 +344,9 @@ class Confluence2MD
   def flatten_attachments
     target = File.expand_path('attachments')
 
+    target = File.expand_path('images/attachments') unless File.directory?(target)
     unless File.directory?(target)
-      warn "Attachments directory not found #{target}"
-      target = File.expand_path('images/attachments')
-    end
-
-    unless File.directory?(target)
-      warn "Attachments directory not found #{target}"
+      CLI.alert "Attachments directory not found #{target}"
       return
     end
 
@@ -286,12 +357,12 @@ class Confluence2MD
 
       file = File.join(target, file)
 
-      warn "Copying #{file} to #{File.join('markdown/images', File.basename(file))}"
+      CLI.debug "Copying #{file} to #{File.join('markdown/images', File.basename(file))}"
       FileUtils.cp file, File.join('markdown/images', File.basename(file))
       copied += 1
     end
 
-    warn "Copied #{copied} files from attachments to images"
+    CLI.info "Copied #{copied} files from attachments to images"
   end
 
   ##
@@ -308,7 +379,7 @@ class Confluence2MD
     markdown_dir = File.expand_path('markdown')
 
     if @options[:clean_dirs]
-      warn "Cleaning out markdown directories"
+      CLI.alert "Cleaning out markdown directories"
 
       # Clear out previous runs
       FileUtils.rm_rf(stripped_dir) if File.exist?(stripped_dir)
@@ -324,8 +395,10 @@ class Confluence2MD
     end
 
     index_h = {}
+    counter = 0
 
     Dir.glob('*.html') do |html|
+      counter += 1
       content = IO.read(html)
       basename = File.basename(html, '.html')
       stripped = File.join('stripped', "#{basename}.html")
@@ -346,8 +419,14 @@ class Confluence2MD
 
       File.open(stripped, 'w') { |f| f.puts content }
 
-      res = `pandoc #{pandoc_options('--extract-media markdown/images')} "#{stripped}"`
-      warn "#{html} => #{markdown}"
+      res, err, status = Open3.capture3(%(pandoc #{pandoc_options('--extract-media markdown/images')} "#{stripped}"))
+      unless status.success?
+        CLI.error("Failed to run pandoc on #{File.basename(stripped)}")
+        CLI.debug err
+        next
+      end
+
+      CLI.info("#{html.trunc_middle(60)} => #{markdown.trunc_middle(60)}")
       res = "#{res}\n\n<!--Source: #{html}-->\n" if @options[:include_source]
       res = res.fix_tables if @options[:fix_tables]
 
@@ -365,6 +444,7 @@ class Confluence2MD
     update_links(index_h) if @options[:rename_files] && @options[:update_links]
     # Delete interim HTML directory
     FileUtils.rm_f('stripped')
+    CLI.finished "Processed #{counter} files"
   end
 
   ##
@@ -405,12 +485,18 @@ class Confluence2MD
     content = content.fix_headers if @options[:fix_headers]
     content = content.fix_hierarchy if @options[:fix_hierarchy]
 
-    res = `echo #{Shellwords.escape(content)} | pandoc #{pandoc_options('--extract-media images')}`
+    res, err, status = Open3.capture3(%(echo #{Shellwords.escape(content)} | pandoc #{pandoc_options('--extract-media images')}))
+    unless status.success?
+      CLI.error("Failed to run pandoc on #{File.basename(stripped)}")
+      CLI.debug err
+      return nil
+    end
+
     res = "#{res}\n\n<!--Source: #{html}-->\n" if @options[:include_source]
     res = res.fix_tables if @options[:fix_tables]
     return res.relative_paths.strip_comments unless markdown
 
-    warn "#{html} => #{markdown}"
+    CLI.info "#{html.trunc_middle(60)} => #{markdown}"
     File.open(markdown, 'w') { |f| f.puts res.relative_paths.strip_comments }
     nil
   end
@@ -428,14 +514,39 @@ class Confluence2MD
     content = content.strip_emoji if @options[:strip_emoji]
     content = content.fix_headers if @options[:fix_headers]
     content = content.fix_hierarchy if @options[:fix_hierarchy]
+    content = Shellwords.escape(content)
 
-    res = `echo #{Shellwords.escape(content)} | pandoc #{pandoc_options('--extract-media images')}`
+    res, err, status = Open3.capture3(%(echo #{content} | pandoc #{pandoc_options('--extract-media images')}))
+    unless status.success?
+      CLI.error 'Failed to run pandoc on STDIN'
+      CLI.debug err
+      return nil
+    end
+
     res = res.fix_tables if @options[:fix_tables]
     res.relative_paths.strip_comments
   end
 
   # string helpers
   class ::String
+    ##
+    ## Truncate string in middle
+    ##
+    ## @param      string  The string
+    ## @param      length  [Integer] final length of string
+    ## @return     [String] truncated string
+    ##
+    def trunc_middle(length)
+      string = dup
+
+      return string if string.length <= length
+
+      start_length = (length - 5) / 2
+      end_length = length - start_length - 5
+
+      "#{string[0, start_length]}[...]#{string[-end_length, end_length]}"
+    end
+
     ##
     ## Convert a string to hyphenated slug
     ##
@@ -766,6 +877,8 @@ end
 
 options = {
   clean_dirs: false,
+  color: true,
+  debug: false,
   fix_headers: true,
   fix_hierarchy: true,
   fix_tables: false,
@@ -831,6 +944,14 @@ opt_parser = OptionParser.new do |opt|
     options[:update_links] = option
   end
 
+  opt.on_tail('--[no-]color', 'Colorize command line messages') do |option|
+    options[:color] = option
+  end
+
+  opt.on_tail('-d', '--debug', 'Display debugging info') do
+    options[:debug] = true
+  end
+
   opt.on_tail('-h', '--help', 'Display help') do
     puts opt
     Process.exit 0
@@ -853,8 +974,8 @@ if ARGV.count.positive?
   res = c2m.single_file(html)
   if res && ARGV[1]
     markdown = File.expand_path(ARGV[1])
-    warn "#{html} => #{markdown}"
     File.open(markdown, 'w') { |f| f.puts res }
+    CLI.finished "#{html} => #{markdown}"
   elsif res
     puts res
   end
