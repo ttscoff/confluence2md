@@ -254,7 +254,7 @@ class HTML2Markdown
     when 'tr'
       ths = node.children.select { |c| c.name == 'th' }
       tds = node.children.select { |c| c.name == 'td' }
-      if ths.count.positive? && tds.count.zero?
+      if ths.count > 1 && tds.count.zero?
         output = node.children.select { |c| c.name == 'th' }
                      .map { |c| output_for(c) }
                      .join.gsub(/\|\|/, '|')
