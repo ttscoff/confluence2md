@@ -373,6 +373,17 @@ class Confluence2MD
   end
 
   ##
+  ## Delete images/images folder if it exists
+  ##
+  def clean_images_folder
+    folder = File.expand_path('images/images')
+    if File.directory?(folder)
+      CLI.alert "Deleting images/images folder"
+      FileUtils.rm_rf(folder)
+    end
+  end
+
+  ##
   ## Convert all HTML files in current directory to Markdown. Creates
   ## directories for stripped HTML and markdown output, with subdirectory for
   ## extracted images.
@@ -451,6 +462,7 @@ class Confluence2MD
     update_links(index_h) if @options[:rename_files] && @options[:update_links]
     # Delete interim HTML directory
     FileUtils.rm_f('stripped')
+    clean_images_folder
     CLI.finished "Processed #{counter} files"
   end
 
