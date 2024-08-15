@@ -1,13 +1,15 @@
-1.0.21
+1.0.22
 
-confluence2md 1.0.21
+confluence2md 1.0.22
 -------------------------
 
 #### CHANGED
 
-- Revert STDERR output CHANGED
+- Switch flag from `--color` to `--colorize` and add hidden `--color=WHEN` flag for compatibility with other CLIs (so `--color=never` and `--color=always` will work)
 
-#### FIXED
+#### IMPROVED
 
-- Handle `images/attachments` paths when rewriting urls so you don't end up with images/images/IMAGE paths
+- Cleaner output with colorization (disable with --no-color)
+- Code cleanup
+- `--debug` will show additional info and error output
 
