@@ -9,7 +9,6 @@ require 'fileutils'
 require 'shellwords'
 require 'optparse'
 require 'erb'
-require 'cgi'
 
 ##
 ## Class for converting HTML to Markdown using Nokogiri
@@ -361,8 +360,6 @@ class Confluence2MD
                  title = content.match(%r{<title>(.*?)</title>}m)[1]
                                 .sub(/^.*? : /, '').sub(/👓/, '').sub(/copy of /i, '')
                  "#{title.slugify}.md"
-               else
-                 nil
                end
 
     content = content.strip_meta if @options[:strip_meta]
@@ -374,13 +371,11 @@ class Confluence2MD
     res = `echo #{Shellwords.escape(content)} | pandoc #{pandoc_options('--extract-media images')} 2> /dev/null`
     res = "#{res}\n\n<!--Source: #{html}-->\n" if @options[:include_source]
     res = res.fix_tables if @options[:fix_tables]
-    if markdown
-      warn "#{html} => #{markdown}"
-      File.open(markdown, 'w') { |f| f.puts res.relative_paths.strip_comments }
-      return nil
-    else
-      return res.relative_paths.strip_comments
-    end
+    return res.relative_paths.strip_comments unless markdown
+
+    warn "#{html} => #{markdown}"
+    File.open(markdown, 'w') { |f| f.puts res.relative_paths.strip_comments }
+    nil
   end
 
   ##
