@@ -302,7 +302,7 @@ class Confluence2MD
     }
     @options = defaults.merge(options)
     CLI.debug = options[:debug] || false
-    CLI.coloring = options[:color] || true
+    CLI.coloring = options[:color] ? true : false
   end
 
   ##
@@ -944,8 +944,15 @@ opt_parser = OptionParser.new do |opt|
     options[:update_links] = option
   end
 
-  opt.on_tail('--[no-]color', 'Colorize command line messages') do |option|
+  opt.on_tail('--[no-]colorize', 'Colorize command line messages with ANSI escape codes') do |option|
     options[:color] = option
+    CLI.coloring = options[:color]
+  end
+
+  # Compatibility with other CLI tools
+  opt.on('--color WHEN') do |option|
+    options[:color] = option =~ /^[nf]/ ? false : true
+    CLI.coloring = options[:color]
   end
 
   opt.on_tail('-d', '--debug', 'Display debugging info') do
