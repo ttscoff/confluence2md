@@ -347,7 +347,7 @@ class Confluence2MD
 
       File.open(stripped, 'w') { |f| f.puts content }
 
-      res = `pandoc #{pandoc_options('--extract-media markdown/images')} "#{stripped}" 2> /dev/null`
+      res = `pandoc #{pandoc_options('--extract-media markdown/images')} "#{stripped}"`
       warn "#{html} => #{markdown}"
       res = "#{res}\n\n<!--Source: #{html}-->\n" if @options[:include_source]
       res = res.fix_tables if @options[:fix_tables]
@@ -408,7 +408,7 @@ class Confluence2MD
     content = content.fix_headers if @options[:fix_headers]
     content = content.fix_hierarchy if @options[:fix_hierarchy]
 
-    res = `echo #{Shellwords.escape(content)} | pandoc #{pandoc_options('--extract-media images')} 2> /dev/null`
+    res = `echo #{Shellwords.escape(content)} | pandoc #{pandoc_options('--extract-media images')}`
     res = "#{res}\n\n<!--Source: #{html}-->\n" if @options[:include_source]
     res = res.fix_tables if @options[:fix_tables]
     if markdown
@@ -434,7 +434,7 @@ class Confluence2MD
     content = content.fix_headers if @options[:fix_headers]
     content = content.fix_hierarchy if @options[:fix_hierarchy]
 
-    res = `echo #{Shellwords.escape(content)} | pandoc #{pandoc_options('--extract-media images')} 2> /dev/null`
+    res = `echo #{Shellwords.escape(content)} | pandoc #{pandoc_options('--extract-media images')}`
     res = res.fix_tables if @options[:fix_tables]
     res.relative_paths.strip_comments
   end
