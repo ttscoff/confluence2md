@@ -30,6 +30,11 @@ class HTML2Markdown
     @markdown = output_for(Nokogiri::HTML(str, baseurl).root).gsub(/\n+/, "\n")
   end
 
+  ##
+  ## Output conversion, adding stored links in reference format.
+  ##
+  ## @return     [String] String representation of the object.
+  ##
   def to_s
     i = 0
     @markdown.to_s + "\n\n" + @links.map {|link|
@@ -38,12 +43,28 @@ class HTML2Markdown
     }.join("\n")
   end
 
+  ##
+  ## Output all children for the node
+  ##
+  ## @param      node  [Nokogiri] the Nokogiri node to process
+  ##
+  ## @see        #output_for
+  ##
+  ## @return     output of node's children
+  ##
   def output_for_children(node)
     node.children.map {|el|
       output_for(el)
     }.join
   end
 
+  ##
+  ## Add link to the stored links for outut later
+  ##
+  ## @param      link  [Hash] The link (:href) and title (:title)
+  ##
+  ## @return     [Integer] length of links hash
+  ##
   def add_link(link)
     if @baseuri
       begin
@@ -67,6 +88,13 @@ class HTML2Markdown
     @links.length
   end
 
+  ##
+  ## Wrap string respecting word boundaries
+  ##
+  ## @param      str   [String]   The string to wrap
+  ##
+  ## @return     [String] wrapped string
+  ##
   def wrap(str)
     return str if str =~ /\n/
     out = []
@@ -82,6 +110,13 @@ class HTML2Markdown
     out.join
   end
 
+  ##
+  ## Output for a single node
+  ##
+  ## @param      node [Nokogiri]  The Nokogiri node object
+  ##
+  ## @return [String] outut of node
+  ##
   def output_for(node)
     case node.name
     when 'head', 'style', 'script'
@@ -557,6 +592,11 @@ class Confluence2MD
       end.gsub(/\|\n\[/, "|\n\n[")
     end
 
+    ##
+    ## Make indentation of subsequent lines match the first line
+    ##
+    ## @return     [String] Outdented version of text
+    ##
     def fix_indentation
       return self unless strip =~ (/^\s+\S/)
       out = []
@@ -713,6 +753,11 @@ class Confluence2MD
     end
   end
 
+  ##
+  ## Return script version (requires it be run from within repository where VERSION file exists)
+  ##
+  ## @return     [String] version string
+  ##
   def version
     version_file = File.join(File.dirname(File.realdirpath(__FILE__)), 'VERSION')
     if File.exist?(version_file)

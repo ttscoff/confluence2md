@@ -65,26 +65,35 @@
 
 <ul>
 <li>Ruby 3.x</li>
-<li>Pandoc installed in $PATH (see <a href="https://pandoc.org/installing.html">Installing docs</a>)</li>
+<li>Pandoc installed in $PATH (see <a href="https://pandoc.org/installing.html">Installation</a>)</li>
 </ul>
 
 <h2 id="usage">Usage</h2>
 
-<p>Run in a folder full of HTML files, or pass a single HTML file as argument&quot;</p>
+<p>Run in a folder full of HTML files, or pass a single HTML file as argument.
+If passing a single HTML file, optionally specify an output file as second argument.</p>
 
-<pre class="code console"><code class="console">Usage: confluence_to_md.rb [OPTIONS] [FILE]
+<p>Run <code>confluence_to_md.rb -h</code> to see available options.</p>
+
+<pre class="code console"><code class="console">Usage: confluence_to_md.rb [OPTIONS] [FILE [OUTPUT_FILE]]
 
 Options:
     -c, --clean                      Clear output directories before converting
     -s, --strip-meta                 Strip Confluence metadata (default false)
+    -f, --[no-]fix-headers           Bump all headers except first h1 (default true)
+    -o, --[no-]fix-hierarchy         Fix header nesting order (default true)
+    -t, --[no-]fix-tables            Convert tables to Markdown (default false)
     -e, --[no-]strip-emoji           Strip emoji (default true)
+        --[no-]rename                Rename output files based on page title (default true)
+        --stdout                     When operating on single file, output to STDOUT instead of filename
+        --[no-]source                Include an HTML comment with name of original HTML file (default false)
         --[no-]update-links          Update links to local files (default true)
-        --[no-]source                Include an HTML comment with name of original HTML file
+    -v, --version                    Display version number
 </code></pre>
 </div></div>
 
       <div id="footer">
-  Generated on Fri Jun 21 08:56:02 2024 by
+  Generated on Thu Aug 15 06:43:09 2024 by
   <a href="https://yardoc.org" title="Yay! A Ruby Documentation Tool" target="_parent">yard</a>
   0.9.36 (ruby-3.0.1).
 </div>
