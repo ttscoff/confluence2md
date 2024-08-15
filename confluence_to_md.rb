@@ -71,7 +71,7 @@ module CLI
     end
 
     def error(message)
-      warn "#{kill_line}#{to_ansi(:red, :bold)}ERROR: #{white}#{message}#{reset}"
+      warn "\n#{to_ansi(:red, :bold)}ERROR: #{white}#{message}#{reset}"
     end
 
     def alert(message)
@@ -83,7 +83,7 @@ module CLI
     end
 
     def info(message)
-      warn "#{kill_line}#{white} INFO: #{message}#{reset_line}"
+      warn "#{kill_line}#{white} INFO: #{message}#{reset_line unless @debug}"
     end
   end
 end
@@ -268,7 +268,7 @@ class HTML2Markdown
             .join.gsub(/\|\|/, '|')
       end
     when 'th', 'td'
-      "|#{output_for_children(node).strip.gsub(/\n+/, '<br/>')}|"
+      "|#{clean_cell(output_for_children(node).strip)}|"
     when 'text'
       # Sometimes Nokogiri lies. Force the encoding back to what we know it is
       if (c = node.content.force_encoding(@encoding)) =~ /\S/
@@ -281,6 +281,13 @@ class HTML2Markdown
     else
       wrap(output_for_children(node))
     end
+  end
+
+  def clean_cell(content)
+    content.gsub!(%r{</?p>}, '')
+    content.gsub!(%r{<li>(.*?)</li>}m, "- \\1\n")
+    content.gsub(%r{<(\w+)(?: .*?)?>(.*?)</\1>}m, '\2')
+    content.gsub(/\n+/, '<br/>')
   end
 end
 

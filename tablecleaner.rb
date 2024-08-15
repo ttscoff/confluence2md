@@ -1,4 +1,4 @@
-#!/usr/bin/env ruby
+#!/usr/bin/env ruby -W1
 # frozen_string_literal: true
 
 # Table formatting
@@ -123,13 +123,16 @@ module TableCleanup
   end
 end
 
-if ARGV.count == 1
-  target = File.expand_path(ARGV[0])
-  if File.exist?(target)
-    content = IO.read(target)
-    File.open(target, 'w') { |f| f.puts TableCleanup.clean(content) }
-  else
-    puts "File #{target} doesn't exist"
+if ARGV.count.positive?
+  ARGV.each do |arg|
+    target = File.expand_path(arg)
+    if File.exist?(target)
+      warn "Processing #{target}"
+      content = IO.read(target)
+      File.open("#{target.sub(/\.(markdown|md)$/, '')}-cleaned.md", 'w') { |f| f.puts TableCleanup.clean(content) }
+    else
+      puts "File #{target} doesn't exist"
+    end
   end
 else
   puts "Usage: #{File.basename(__FILE__)} MARKDOWN_FILE_PATH"
