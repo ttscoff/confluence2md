@@ -29,6 +29,11 @@ class HTML2Markdown
     @markdown = output_for(Nokogiri::HTML(str, baseurl).root).gsub(/\n+/, "\n")
   end
 
+  ##
+  ## Output conversion, adding stored links in reference format.
+  ##
+  ## @return     [String] String representation of the object.
+  ##
   def to_s
     i = 0
     @markdown.to_s + "\n\n" + @links.map {|link|
@@ -37,12 +42,28 @@ class HTML2Markdown
     }.join("\n")
   end
 
+  ##
+  ## Output all children for the node
+  ##
+  ## @param      node  [Nokogiri] the Nokogiri node to process
+  ##
+  ## @see        #output_for
+  ##
+  ## @return     output of node's children
+  ##
   def output_for_children(node)
     node.children.map {|el|
       output_for(el)
     }.join
   end
 
+  ##
+  ## Add link to the stored links for outut later
+  ##
+  ## @param      link  [Hash] The link (:href) and title (:title)
+  ##
+  ## @return     [Integer] length of links hash
+  ##
   def add_link(link)
     if @baseuri
       begin
@@ -66,6 +87,13 @@ class HTML2Markdown
     @links.length
   end
 
+  ##
+  ## Wrap string respecting word boundaries
+  ##
+  ## @param      str   [String]   The string to wrap
+  ##
+  ## @return     [String] wrapped string
+  ##
   def wrap(str)
     return str if str =~ /\n/
     out = []
@@ -81,6 +109,13 @@ class HTML2Markdown
     out.join
   end
 
+  ##
+  ## Output for a single node
+  ##
+  ## @param      node [Nokogiri]  The Nokogiri node object
+  ##
+  ## @return [String] outut of node
+  ##
   def output_for(node)
     case node.name
     when 'head', 'style', 'script'
@@ -115,9 +150,9 @@ class HTML2Markdown
         i += 1
         "#{i}. #{output_for_children(el).gsub(/^(\t)|(    )/, "\t\t").gsub(/^>/, "\t>")}\n"
       }.join + "\n\n"
-    when 'pre', 'code'
+    when 'code'
       block = "\t#{wrap(output_for_children(node)).gsub(/\n/, "\n\t")}"
-      if block.count("\n") < 1
+      if block.count("\n").zero?
         "`#{output_for_children(node)}`"
       else
         block
@@ -142,7 +177,9 @@ class HTML2Markdown
       "**#{node.text.sub(/(\s*)?$/, '**\1')}"
     # Tables are not part of Markdown, so we output WikiCreole
     when 'tr'
-      if node.children.select { |c| c.name == 'th' }.count.positive?
+      ths = node.children.select { |c| c.name == 'th' }
+      tds = node.children.select { |c| c.name == 'td' }
+      if ths.count.positive? && tds.count.zero?
         output = node.children.select { |c| c.name == 'th' }
             .map { |c| output_for(c) }
             .join.gsub(/\|\|/, '|')
@@ -209,7 +246,7 @@ class Confluence2MD
   ##
   ## Copy attachments folder to markdown/
   ##
-  def copy_attachments
+  def copy_attachments(markdown_dir)
     target = File.expand_path('attachments')
 
     unless File.directory?(target)
@@ -283,7 +320,7 @@ class Confluence2MD
     if @options[:flatten_attachments]
       flatten_attachments
     else
-      copy_attachments
+      copy_attachments(markdown_dir)
     end
 
     index_h = {}
@@ -309,7 +346,7 @@ class Confluence2MD
 
       File.open(stripped, 'w') { |f| f.puts content }
 
-      res = `pandoc #{pandoc_options('--extract-media markdown/images')} "#{stripped}" 2> /dev/null`
+      res = `pandoc #{pandoc_options('--extract-media markdown/images')} "#{stripped}"`
       warn "#{html} => #{markdown}"
       res = "#{res}\n\n<!--Source: #{html}-->\n" if @options[:include_source]
       res = res.fix_tables if @options[:fix_tables]
@@ -368,7 +405,7 @@ class Confluence2MD
     content = content.fix_headers if @options[:fix_headers]
     content = content.fix_hierarchy if @options[:fix_hierarchy]
 
-    res = `echo #{Shellwords.escape(content)} | pandoc #{pandoc_options('--extract-media images')} 2> /dev/null`
+    res = `echo #{Shellwords.escape(content)} | pandoc #{pandoc_options('--extract-media images')}`
     res = "#{res}\n\n<!--Source: #{html}-->\n" if @options[:include_source]
     res = res.fix_tables if @options[:fix_tables]
     return res.relative_paths.strip_comments unless markdown
@@ -392,7 +429,7 @@ class Confluence2MD
     content = content.fix_headers if @options[:fix_headers]
     content = content.fix_hierarchy if @options[:fix_hierarchy]
 
-    res = `echo #{Shellwords.escape(content)} | pandoc #{pandoc_options('--extract-media images')} 2> /dev/null`
+    res = `echo #{Shellwords.escape(content)} | pandoc #{pandoc_options('--extract-media images')}`
     res = res.fix_tables if @options[:fix_tables]
     res.relative_paths.strip_comments
   end
@@ -550,6 +587,11 @@ class Confluence2MD
       end.gsub(/\|\n\[/, "|\n\n[")
     end
 
+    ##
+    ## Make indentation of subsequent lines match the first line
+    ##
+    ## @return     [String] Outdented version of text
+    ##
     def fix_indentation
       return self unless strip =~ (/^\s+\S/)
       out = []
@@ -669,7 +711,7 @@ class Confluence2MD
     ## @return [String] content with /attachments links updated
     ##
     def repoint_flattened
-      gsub(%r{attachments/(?:\d+)/(.*?(?:png|jpe?g|gif|pdf))}, 'images/\1')
+      gsub(%r{(?:images/)?attachments/(?:\d+)/(.*?(?:png|jpe?g|gif|pdf))}, 'images/\1')
     end
 
     ##
@@ -706,6 +748,11 @@ class Confluence2MD
     end
   end
 
+  ##
+  ## Return script version (requires it be run from within repository where VERSION file exists)
+  ##
+  ## @return     [String] version string
+  ##
   def version
     version_file = File.join(File.dirname(File.realdirpath(__FILE__)), 'VERSION')
     if File.exist?(version_file)
