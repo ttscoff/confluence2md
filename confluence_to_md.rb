@@ -716,7 +716,7 @@ class Confluence2MD
     ## @return [String] content with /attachments links updated
     ##
     def repoint_flattened
-      gsub(%r{attachments/(?:\d+)/(.*?(?:png|jpe?g|gif|pdf))}, 'images/\1')
+      gsub(%r{(?:images/)?attachments/(?:\d+)/(.*?(?:png|jpe?g|gif|pdf))}, 'images/\1')
     end
 
     ##
