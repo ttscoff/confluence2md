@@ -1,3 +1,16 @@
+confluence2md 1.0.24
+-------------------------
+
+#### NEW
+
+- Table formatting for cleaner tables (see `--clean-tables` and `--max-table-width`)
+- Table formatting for cleaner tables (see `--clean-tables` and `--max-table-width`)
+
+#### IMPROVED
+
+- Major code refactoring and separation to multiple files that are merged into final script
+- Major code refactoring and separation to multiple files that are merged into final script
+
 confluence2md 1.0.23
 -------------------------
 
