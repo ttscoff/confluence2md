@@ -45,6 +45,7 @@ changelog >> current_changes.md
 hub release create $VER -F current_changes.md
 git pull
 gh release upload $VER confluence_to_md.rb
+gh release upload $VER tablecleaner.rb
 rm current_changes.md
 ```
 

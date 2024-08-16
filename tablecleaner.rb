@@ -1,6 +1,8 @@
 #!/usr/bin/env ruby -W1
 # frozen_string_literal: true
 
+require 'optparse'
+
 # Table formatting, cleans up tables in content
 class TableCleanup
   # Max cell width for formatting, defaults to 30
@@ -13,8 +15,8 @@ class TableCleanup
   ##
   ## Initialize a table cleaner
   ##
-  ## @param      [content]  [String] The content to clean
-  ## @param      [options]  [Hash] The options
+  ## @param      content  [String] The content to clean
+  ## @param      options  [Hash] The options
   ##
   def initialize(content = nil, options = nil)
     @content = content ? content : ''
@@ -176,6 +178,61 @@ class TableCleanup
   end
 end
 
+module C2MD
+  VERSION = '1.0.24'
+end
+
+options = {
+  # debug: false,
+  max_table_width: nil,
+  max_cell_width: 30,
+  output: nil,
+  stdout: false
+}
+
+opt_parser = OptionParser.new do |opt|
+  opt.banner = <<~EOBANNER
+    Run with file arguments (Markdown containing tables). Cleaned output will be saved to
+    [FILENAME]-cleaned.md unless -o option is provided.
+
+    Usage: #{File.basename(__FILE__)} [OPTIONS] [FILE [FILE]]
+  EOBANNER
+  opt.separator  ''
+  opt.separator  'Options:'
+
+  opt.on('-o', '--output FILENAME', 'Save output to specified file') do |option|
+    options[:output] = option
+  end
+
+  opt.on('-t', '--max-table-width WIDTH', 'Define a maximum table width') do |option|
+    options[:max_table_width] = option.to_i
+  end
+
+  opt.on('-c', '--max-cell-width WIDTH', 'Define a maximum cell width. Overriden by --max_table_width') do |option|
+    options[:max_cell_width] = option.to_i
+  end
+
+  opt.on('--stdout', 'When operating on single file, output to STDOUT instead of filename') do
+    options[:stdout] = true
+  end
+
+  # opt.on_tail('-d', '--debug', 'Display debugging info') do
+  #   options[:debug] = true
+  # end
+
+  opt.on_tail('-h', '--help', 'Display help') do
+    puts opt
+    Process.exit 0
+  end
+
+  opt.on_tail('-v', '--version', 'Display version number') do
+    puts "#{File.basename(__FILE__)} v#{C2MD::VERSION}"
+    Process.exit 0
+  end
+end
+
+opt_parser.parse!
+
 if ARGV.count.positive?
   ARGV.each do |arg|
     target = File.expand_path(arg)
@@ -183,16 +240,25 @@ if ARGV.count.positive?
       warn "Processing #{target}"
       content = IO.read(target)
       tc = TableCleanup.new(content, { max_cell_width: 30 })
-      File.open("#{target.sub(/\.(markdown|md)$/, '')}-cleaned.md", 'w') { |f| f.puts tc.clean(content) }
+      output = tc.clean
+      if options[:stdout]
+        puts output
+      else
+        file = options[:output] ? File.expand_path(options[:output]) : "#{target.sub(/\.(markdown|md)$/, '')}-cleaned.md"
+        File.open(file, 'w') { |f| f.puts output }
+        warn "Cleaned output written to #{file}"
+      end
     else
       puts "File #{target} doesn't exist"
     end
   end
 else
-  tc = TableCleanup.new
-  tc.content = DATA.read
-  tc.max_table_width = 60
-  puts tc.clean
+  # tc = TableCleanup.new
+  # tc.content = DATA.read
+  # tc.max_table_width = 60
+  # puts tc.clean
+  puts "File argument(s) required"
+  Process.exit 1
 end
 
 __END__

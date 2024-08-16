@@ -20,7 +20,8 @@ end
 
 desc 'Merge required files into single script'
 task :merge do
-  puts BuildScript.merge
+  BuildScript.merge('src/confluence_to_md.rb', 'confluence_to_md.rb')
+  BuildScript.merge('src/tablecleaner.rb', 'tablecleaner.rb')
 end
 
 class BuildScript
@@ -42,19 +43,19 @@ class BuildScript
   end
 
   class << self
-    def compile
-      source_file = File.expand_path('confluence_to_md_test.rb')
+    def compile(file)
+      source_file = File.expand_path(file)
       source = IO.read(source_file).strip
 
       source.import_markers(File.dirname(source_file))
     end
 
-    def merge
-      script = compile
-      target = "confluence_to_md.rb"
+    def merge(source, target)
+      script = compile(File.expand_path(source))
+      outfile = File.expand_path(target)
 
-      File.open(target, 'w') { |f| f.puts script }
-      "Updated script"
+      File.open(outfile, 'w') { |f| f.puts script }
+      puts "Updated #{target} script"
     end
   end
 end
@@ -62,9 +63,9 @@ end
 desc 'Bump incremental version number'
 task :bump, :type do |_, args|
   args.with_defaults(type: 'inc')
-  version_file = 'VERSION'
+  version_file = 'lib/version.rb'
   content = IO.read(version_file)
-  content.sub!(/(?<major>\d+)\.(?<minor>\d+)\.(?<inc>\d+)(?<pre>\S+)?/) do
+  content.sub!(/(?<=VERSION = ')(?<major>\d+)\.(?<minor>\d+)\.(?<inc>\d+)(?<pre>\S+)?(?=')/) do
     m = Regexp.last_match
     major = m['major'].to_i
     minor = m['minor'].to_i

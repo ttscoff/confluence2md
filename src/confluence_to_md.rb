@@ -16,19 +16,22 @@ rescue LoadError
 end
 
 # merge
-require_relative 'lib/tty'
+require_relative '../lib/version'
 
 # merge
-require_relative 'lib/cli'
+require_relative '../lib/tty'
 
 # merge
-require_relative 'lib/table'
+require_relative '../lib/cli'
 
 # merge
-require_relative 'lib/html2markdown'
+require_relative '../lib/table'
 
 # merge
-require_relative 'lib/confluence2markdown'
+require_relative '../lib/html2markdown'
+
+# merge
+require_relative '../lib/confluence2markdown'
 
 options = {
   clean_dirs: false,
@@ -140,8 +143,7 @@ opt_parser = OptionParser.new do |opt|
   end
 
   opt.on_tail('-v', '--version', 'Display version number') do
-    c2m = Confluence2MD.new
-    puts "#{File.basename(__FILE__)} #{c2m.version}"
+    puts "#{File.basename(__FILE__)} v#{C2MD::VERSION}"
     Process.exit 0
   end
 end

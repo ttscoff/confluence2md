@@ -15,6 +15,10 @@ begin
 rescue LoadError
 end
 
+module C2MD
+  VERSION = '1.0.24'
+end
+
 module TTY
   # Responsible for detecting terminal screen size
   #
@@ -1669,21 +1673,6 @@ class Confluence2MD
       replace prepare_content(options)
     end
   end
-
-  ##
-  ## Return script version (requires it be run from within repository where VERSION file exists)
-  ##
-  ## @return     [String] version string
-  ##
-  def version
-    version_file = File.join(File.dirname(File.realdirpath(__FILE__)), 'VERSION')
-    if File.exist?(version_file)
-      version = IO.read(version_file).strip
-      "v#{version}"
-    else
-      '(version unavailable)'
-    end
-  end
 end
 
 options = {
@@ -1796,8 +1785,7 @@ opt_parser = OptionParser.new do |opt|
   end
 
   opt.on_tail('-v', '--version', 'Display version number') do
-    c2m = Confluence2MD.new
-    puts "#{File.basename(__FILE__)} #{c2m.version}"
+    puts "#{File.basename(__FILE__)} v#{C2MD::VERSION}"
     Process.exit 0
   end
 end

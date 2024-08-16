@@ -623,19 +623,4 @@ class Confluence2MD
       replace prepare_content(options)
     end
   end
-
-  ##
-  ## Return script version (requires it be run from within repository where VERSION file exists)
-  ##
-  ## @return     [String] version string
-  ##
-  def version
-    version_file = File.join(File.dirname(File.realdirpath(__FILE__)), 'VERSION')
-    if File.exist?(version_file)
-      version = IO.read(version_file).strip
-      "v#{version}"
-    else
-      '(version unavailable)'
-    end
-  end
 end
