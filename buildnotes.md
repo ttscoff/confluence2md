@@ -22,6 +22,7 @@ Be sure to bump the version with `rake bump` before committing changes. Use chan
 
 All version bumping and changelog updating handled by script below. Steps are basically:
 
+1. Compile script
 1. Bump version
 1. Update changelog
 1. commit and push
@@ -30,15 +31,17 @@ All version bumping and changelog updating handled by script below. Steps are ba
 ```run
 #!/usr/local/bin/fish
 
+rake merge
 rake bump
 set VER (command cat VERSION)
+
+changelog -u
+git ar
+git commit --amend --no-edit
+git push
 echo $VER > current_changes.md
 echo >> current_changes.md
 changelog >> current_changes.md
-changelog -u
-git ar
-git commit -a -m "Release version $VER"
-git push
 hub release create $VER -F current_changes.md
 git pull
 gh release upload $VER confluence_to_md.rb
@@ -56,4 +59,3 @@ Keep README.md up-to-date with changes to functionality and new command line swi
 Use YARD commenting in script and run Yard to update docs.
 
 @run(yard)
-
