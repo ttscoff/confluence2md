@@ -551,8 +551,8 @@ class Confluence2MD
     ##
     ## Truncate string in middle
     ##
-    ## @param      string  The string
     ## @param      length  [Integer] final length of string
+    ##
     ## @return     [String] truncated string
     ##
     def trunc_middle(length)
@@ -943,6 +943,12 @@ opt_parser = OptionParser.new do |opt|
     options[:fix_tables] = option
   end
 
+  # Hidden, compatibility with other CLI tools (--color=never/always/auto)
+  opt.on('--color WHEN') do |option|
+    options[:color] = option =~ /^[nf]/ ? false : true
+    CLI.coloring = options[:color]
+  end
+
   opt.on('--[no-]flatten-images', 'Flatten attachments folder and update links (default true)') do |option|
     options[:flatten_attachments] = option
   end
@@ -965,12 +971,6 @@ opt_parser = OptionParser.new do |opt|
 
   opt.on_tail('--[no-]colorize', 'Colorize command line messages with ANSI escape codes') do |option|
     options[:color] = option
-    CLI.coloring = options[:color]
-  end
-
-  # Compatibility with other CLI tools
-  opt.on('--color WHEN') do |option|
-    options[:color] = option =~ /^[nf]/ ? false : true
     CLI.coloring = options[:color]
   end
 
