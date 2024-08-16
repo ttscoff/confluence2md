@@ -1,4 +1,3 @@
-#!/usr/bin/env ruby -W1
 # frozen_string_literal: true
 
 # Table formatting, cleans up tables in content
@@ -13,8 +12,8 @@ class TableCleanup
   ##
   ## Initialize a table cleaner
   ##
-  ## @param      [content]  [String] The content to clean
-  ## @param      [options]  [Hash] The options
+  ## @param      content  [String] The content to clean
+  ## @param      options  [Hash] The options
   ##
   def initialize(content = nil, options = nil)
     @content = content ? content : ''
@@ -175,40 +174,3 @@ class TableCleanup
     @content
   end
 end
-
-if ARGV.count.positive?
-  ARGV.each do |arg|
-    target = File.expand_path(arg)
-    if File.exist?(target)
-      warn "Processing #{target}"
-      content = IO.read(target)
-      tc = TableCleanup.new(content, { max_cell_width: 30 })
-      File.open("#{target.sub(/\.(markdown|md)$/, '')}-cleaned.md", 'w') { |f| f.puts tc.clean(content) }
-    else
-      puts "File #{target} doesn't exist"
-    end
-  end
-else
-  tc = TableCleanup.new
-  tc.content = DATA.read
-  tc.max_table_width = 60
-  puts tc.clean
-end
-
-__END__
-Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod
-tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam,
-quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo
-consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse
-cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non
-proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
-
-|header 1| header 2|
-|:----|---:|
-| data1|data2|
-
-another| table
-|:-----|:----:|
-one|Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
-two|a much shorter cell|
-|three|`another row`|

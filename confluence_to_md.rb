@@ -10,26 +10,555 @@ require 'shellwords'
 require 'optparse'
 require 'erb'
 require 'open3'
+begin
+  require 'rbconfig'
+rescue LoadError
+end
+
+module TTY
+  # Responsible for detecting terminal screen size
+  #
+  # @api public
+  module Screen
+    # The Ruby configuration
+    #
+    # @return [Hash]
+    #
+    # @api private
+    RUBY_CONFIG = defined?(::RbConfig) ? ::RbConfig::CONFIG : {}
+    private_constant :RUBY_CONFIG
+
+    # Define module method as private
+    #
+    # @return [void]
+    #
+    # @api private
+    def self.private_module_function(name)
+      module_function(name)
+      private_class_method(name)
+    end
+
+    case RUBY_CONFIG['host_os'] || ::RUBY_PLATFORM
+    when /mswin|msys|mingw|cygwin|bccwin|wince|emc/
+      # Detect Windows system
+      #
+      # @return [Boolean]
+      #
+      # @!visibility private
+      def windows?
+        true
+      end
+    else
+      # Detect Windows system
+      #
+      # @return [Boolean]
+      #
+      # @!visibility private
+      def windows?
+        false
+      end
+    end
+    module_function :windows?
+
+    case RUBY_CONFIG['ruby_install_name'] || ::RUBY_ENGINE
+    when /jruby/
+      # Detect JRuby
+      #
+      # @return [Boolean]
+      #
+      # @!visibility private
+      def jruby?
+        true
+      end
+    else
+      # Detect JRuby
+      #
+      # @return [Boolean]
+      #
+      # @!visibility private
+      def jruby?
+        false
+      end
+    end
+    module_function :jruby?
+
+    # The default terminal screen size
+    #
+    # @return [Array(Integer, Integer)]
+    #
+    # @api private
+    DEFAULT_SIZE = [27, 80].freeze
+
+    @env = ENV
+    @output = $stderr
+
+    class << self
+      # The environment variables
+      #
+      # @example
+      #   TTY::Screen.env
+      #
+      # @example
+      #   TTY::Screen.env = {"ROWS" => "51", "COLUMNS" => "211"}
+      #
+      # @return [Enumerable]
+      #
+      # @api public
+      attr_accessor :env
+
+      # The output stream with standard error as default
+      #
+      # @example
+      #   TTY::Screen.output
+      #
+      # @example
+      #   TTY::Screen.output = $stdout
+      #
+      # @return [IO]
+      #
+      # @api public
+      attr_accessor :output
+    end
+
+    # Detect terminal screen size
+    #
+    # @example
+    #   TTY::Screen.size # => [51, 211]
+    #
+    # @return [Array(Integer, Integer)]
+    #   the terminal screen size
+    #
+    # @api public
+    def size(verbose: false)
+      size_from_java(verbose: verbose) ||
+        size_from_win_api(verbose: verbose) ||
+        size_from_ioctl ||
+        size_from_io_console(verbose: verbose) ||
+        size_from_readline(verbose: verbose) ||
+        size_from_tput ||
+        size_from_stty ||
+        size_from_env ||
+        size_from_ansicon ||
+        size_from_default
+    end
+    module_function :size
+
+    # Detect terminal screen width
+    #
+    # @example
+    #   TTY::Screen.width # => 211
+    #
+    # @return [Integer]
+    #
+    # @api public
+    def width
+      size[1]
+    end
+    module_function :width
+
+    alias columns width
+    alias cols width
+    module_function :columns
+    module_function :cols
+
+    # Detect terminal screen height
+    #
+    # @example
+    #   TTY::Screen.height # => 51
+    #
+    # @return [Integer]
+    #
+    # @api public
+    def height
+      size[0]
+    end
+    module_function :height
+
+    alias rows height
+    alias lines height
+    module_function :rows
+    module_function :lines
+
+    # Detect terminal screen size from default
+    #
+    # @return [Array(Integer, Integer)]
+    #
+    # @api private
+    def size_from_default
+      DEFAULT_SIZE
+    end
+    module_function :size_from_default
+
+    if windows?
+      # The standard output handle
+      #
+      # @return [Integer]
+      #
+      # @api private
+      STDOUT_HANDLE = 0xFFFFFFF5
+
+      # Detect terminal screen size from Windows API
+      #
+      # @param [Boolean] verbose
+      #   the verbose mode, by default false
+      #
+      # @return [Array(Integer, Integer), nil]
+      #   the terminal screen size or nil
+      #
+      # @api private
+      def size_from_win_api(verbose: false)
+        require 'fiddle' unless defined?(Fiddle)
+
+        kernel32 = Fiddle::Handle.new('kernel32')
+        get_std_handle = Fiddle::Function.new(
+          kernel32['GetStdHandle'], [-Fiddle::TYPE_INT], Fiddle::TYPE_INT)
+        get_console_buffer_info = Fiddle::Function.new(
+          kernel32['GetConsoleScreenBufferInfo'],
+          [Fiddle::TYPE_LONG, Fiddle::TYPE_VOIDP], Fiddle::TYPE_INT)
+
+        format = 'SSSSSssssSS'
+        buffer = ([0] * format.size).pack(format)
+        stdout_handle = get_std_handle.(STDOUT_HANDLE)
+
+        get_console_buffer_info.(stdout_handle, buffer)
+        _, _, _, _, _, left, top, right, bottom, = buffer.unpack(format)
+        size = [bottom - top + 1, right - left + 1]
+        size if nonzero_column?(size[1] - 1)
+      rescue LoadError
+        warn 'no native fiddle module found' if verbose
+      rescue Fiddle::DLError
+        # non windows platform or no kernel32 lib
+      end
+    else
+      def size_from_win_api(verbose: false)
+        nil
+      end
+    end
+    module_function :size_from_win_api
+
+    if jruby?
+      # Detect terminal screen size from Java
+      #
+      # @param [Boolean] verbose
+      #   the verbose mode, by default false
+      #
+      # @return [Array(Integer, Integer), nil]
+      #   the terminal screen size or nil
+      #
+      # @api private
+      def size_from_java(verbose: false)
+        require 'java'
+
+        java_import 'jline.TerminalFactory'
+        terminal = TerminalFactory.get
+        size = [terminal.get_height, terminal.get_width]
+        size if nonzero_column?(size[1])
+      rescue
+        warn 'failed to import java terminal package' if verbose
+      end
+    else
+      def size_from_java(verbose: false)
+        nil
+      end
+    end
+    module_function :size_from_java
+
+    # Detect terminal screen size from io-console
+    #
+    # On Windows, the io-console falls back to reading environment
+    # variables. This means any user changes to the terminal screen
+    # size will not be reflected in the runtime of the Ruby application.
+    #
+    # @param [Boolean] verbose
+    #   the verbose mode, by default false
+    #
+    # @return [Array(Integer, Integer), nil]
+    #   the terminal screen size or nil
+    #
+    # @api private
+    def size_from_io_console(verbose: false)
+      return unless output.tty?
+
+      require 'io/console' unless IO.method_defined?(:winsize)
+      return unless output.respond_to?(:winsize)
+
+      size = output.winsize
+      size if nonzero_column?(size[1])
+    rescue Errno::EOPNOTSUPP
+      # no support for winsize on output
+    rescue LoadError
+      warn 'no native io/console support or io-console gem' if verbose
+    end
+    module_function :size_from_io_console
+
+    if !jruby? && output.respond_to?(:ioctl)
+      # The get window size control code for Linux
+      #
+      # @return [Integer]
+      #
+      # @api private
+      TIOCGWINSZ = 0x5413
+
+      # The get window size control code for FreeBSD and macOS
+      #
+      # @return [Integer]
+      #
+      # @api private
+      TIOCGWINSZ_PPC = 0x40087468
+
+      # The get window size control code for Solaris
+      #
+      # @return [Integer]
+      #
+      # @api private
+      TIOCGWINSZ_SOL = 0x5468
+
+      # The ioctl window size buffer format
+      #
+      # @return [String]
+      #
+      # @api private
+      TIOCGWINSZ_BUF_FMT = 'SSSS'
+      private_constant :TIOCGWINSZ_BUF_FMT
+
+      # The ioctl window size buffer length
+      #
+      # @return [Integer]
+      #
+      # @api private
+      TIOCGWINSZ_BUF_LEN = TIOCGWINSZ_BUF_FMT.length
+      private_constant :TIOCGWINSZ_BUF_LEN
+
+      # Detect terminal screen size from ioctl
+      #
+      # @return [Array(Integer, Integer), nil]
+      #   the terminal screen size or nil
+      #
+      # @api private
+      def size_from_ioctl
+        buffer = Array.new(TIOCGWINSZ_BUF_LEN, 0).pack(TIOCGWINSZ_BUF_FMT)
+
+        if ioctl?(TIOCGWINSZ, buffer) ||
+           ioctl?(TIOCGWINSZ_PPC, buffer) ||
+           ioctl?(TIOCGWINSZ_SOL, buffer)
+
+          rows, cols, = buffer.unpack(TIOCGWINSZ_BUF_FMT)
+          [rows, cols] if nonzero_column?(cols)
+        end
+      end
+
+      # Check if the ioctl call gets window size on any standard stream
+      #
+      # @param [Integer] control
+      #   the control code
+      # @param [String] buf
+      #   the window size buffer
+      #
+      # @return [Boolean]
+      #   true if the ioctl call gets window size, false otherwise
+      #
+      # @api private
+      def ioctl?(control, buf)
+        ($stdout.ioctl(control, buf) >= 0) ||
+          ($stdin.ioctl(control, buf) >= 0) ||
+          ($stderr.ioctl(control, buf) >= 0)
+      rescue SystemCallError
+        false
+      end
+      module_function :ioctl?
+    else
+      def size_from_ioctl; nil end
+    end
+    module_function :size_from_ioctl
+
+    # Detect terminal screen size from readline
+    #
+    # @param [Boolean] verbose
+    #   the verbose mode, by default false
+    #
+    # @return [Array(Integer, Integer), nil]
+    #   the terminal screen size or nil
+    #
+    # @api private
+    def size_from_readline(verbose: false)
+      return unless output.tty?
+
+      require 'readline' unless defined?(::Readline)
+      return unless ::Readline.respond_to?(:get_screen_size)
+
+      size = ::Readline.get_screen_size
+      size if nonzero_column?(size[1])
+    rescue LoadError
+      warn 'no readline gem' if verbose
+    rescue NotImplementedError
+    end
+    module_function :size_from_readline
+
+    # Detect terminal screen size from tput
+    #
+    # @return [Array(Integer, Integer), nil]
+    #   the terminal screen size or nil
+    #
+    # @api private
+    def size_from_tput
+      return unless output.tty? && command_exist?('tput')
+
+      lines = run_command('tput', 'lines')
+      return unless lines
+
+      cols = run_command('tput', 'cols')
+      [lines.to_i, cols.to_i] if nonzero_column?(cols)
+    end
+    module_function :size_from_tput
+
+    # Detect terminal screen size from stty
+    #
+    # @return [Array(Integer, Integer), nil]
+    #   the terminal screen size or nil
+    #
+    # @api private
+    def size_from_stty
+      return unless output.tty? && command_exist?('stty')
+
+      out = run_command('stty', 'size')
+      return unless out
+
+      size = out.split.map(&:to_i)
+      size if nonzero_column?(size[1])
+    end
+    module_function :size_from_stty
+
+    # Detect terminal screen size from environment variables
+    #
+    # After executing Ruby code, when the user changes terminal
+    # screen size during code runtime, the code will not be
+    # notified, and hence will not see the new size reflected
+    # in its copy of LINES and COLUMNS environment variables.
+    #
+    # @return [Array(Integer, Integer), nil]
+    #   the terminal screen size or nil
+    #
+    # @api private
+    def size_from_env
+      return unless env['COLUMNS'] =~ /^\d+$/
+
+      size = [(env['LINES'] || env['ROWS']).to_i, env['COLUMNS'].to_i]
+      size if nonzero_column?(size[1])
+    end
+    module_function :size_from_env
+
+    # Detect terminal screen size from the ANSICON environment variable
+    #
+    # @return [Array(Integer, Integer), nil]
+    #   the terminal screen size or nil
+    #
+    # @api private
+    def size_from_ansicon
+      return unless env['ANSICON'] =~ /\((.*)x(.*)\)/
+
+      size = [::Regexp.last_match(2).to_i, ::Regexp.last_match(1).to_i]
+      size if nonzero_column?(size[1])
+    end
+    module_function :size_from_ansicon
+
+    # Check if a command exists
+    #
+    # @param [String] command
+    #   the command to check
+    #
+    # @return [Boolean]
+    #
+    # @api private
+    def command_exist?(command)
+      exts = env.fetch('PATHEXT', '').split(::File::PATH_SEPARATOR)
+      env.fetch('PATH', '').split(::File::PATH_SEPARATOR).any? do |dir|
+        file = ::File.join(dir, command)
+        ::File.exist?(file) ||
+          exts.any? { |ext| ::File.exist?("#{file}#{ext}") }
+      end
+    end
+    private_module_function :command_exist?
+
+    # Run command capturing the standard output
+    #
+    # @param [Array<String>] args
+    #   the command arguments
+    #
+    # @return [String, nil]
+    #   the command output or nil
+    #
+    # @api private
+    def run_command(*args)
+      %x(#{args.join(' ')})
+    rescue IOError, SystemCallError
+      nil
+    end
+    private_module_function :run_command
+
+    # Check if a number is non-zero
+    #
+    # @param [Integer, String] column
+    #   the column to check
+    #
+    # @return [Boolean]
+    #
+    # @api private
+    def nonzero_column?(column)
+      column.to_i > 0
+    end
+    private_module_function :nonzero_column?
+  end
+end
+
 ##
 ## module for terminal output
 ##
 module CLI
+  # String helpers
+  class ::String
+    ##
+    ## Truncate a string at the end, accounting for message prefix
+    ##
+    ## @param      prefix  [Integer] The length of the prefix
+    ##
+    def trunc(prefix = 8)
+      if length > TTY::Screen.cols - prefix
+        self[0..TTY::Screen.cols - prefix]
+      else
+        self
+      end
+    end
+
+    #---------------------------------------------------------------------------
+    ## Destructive version of #trunc
+    ##
+    ## @param      prefix  [Integer] The length of the prefix
+    ##
+    ## @return     [String] truncated string
+    ##
+    def trunc!(prefix)
+      replace trunc(prefix)
+    end
+  end
+
   class << self
     # Enable coloring
     attr_writer :coloring
     # Enable debugging
     attr_writer :debug
 
+    ## Basic ANSI color codes
     COLORS = {
-      default: 39,
       black: 30,
       red: 31,
       green: 32,
       yellow: 33,
       cyan: 36,
-      white: 37
+      white: 37,
+      default: 39
     }.freeze
 
+    ## Basic ANSI style codes
     FORMATS = {
       reset: 0,
       bold: 1,
@@ -42,6 +571,12 @@ module CLI
       negative: 7
     }.freeze
 
+    ##
+    ## Convert symbol to ansi code based on table
+    ##
+    ## @param      color  [Symbol, String] The color
+    ## @param      style  [Array<Symbol>] The style, :bold, :dark, etc.
+    ##
     def to_ansi(color, style = [:normal])
       return '' unless @coloring
 
@@ -50,41 +585,254 @@ module CLI
       "\033[#{prefix}#{COLORS[color.to_sym]}m"
     end
 
+    ##
+    ## Send ansi code for resetting cursor to beginning of current line
+    ##
     def reset_line
       "\033\[A" if @coloring
     end
 
+    ##
+    ## Send ansi code for clearing the current line
+    ##
     def kill_line
       "\033\[2K" if @coloring
     end
 
+    ##
+    ## Send ansi code for reset to regular text
+    ##
     def reset
       to_ansi(:default, :reset)
     end
 
+    ##
+    ## Send ansi code for bold white text
+    ##
     def white
       to_ansi(:white, :bold)
     end
 
+    ##
+    ## Display alert level message. Ignored unless debugging is active
+    ##
+    ## @param      message  [String] The message
+    ##
     def debug(message)
-      warn "#{kill_line}#{to_ansi(:white, :dark)}DEBUG: #{message}#{reset}" if @debug
+      warn "#{kill_line}#{to_ansi(:white, :dark)}DEBUG: #{message.trunc}#{reset}\n" if @debug
     end
 
+    ##
+    ## Display error level message
+    ##
+    ## @param      message  [String] The message
+    ##
     def error(message)
-      warn "\n#{to_ansi(:red, :bold)}ERROR: #{white}#{message}#{reset}"
+      warn "\n#{to_ansi(:red, :bold)}ERROR: #{white}#{message.trunc}#{reset}\n"
     end
 
+    ##
+    ## Display alert level message
+    ##
+    ## @param      message  [String] The message
+    ##
     def alert(message)
-      warn "#{kill_line}#{to_ansi(:yellow, :bold)}ALERT: #{white}#{message}#{reset}"
+      warn "#{kill_line}#{to_ansi(:yellow, :bold)}ALERT: #{white}#{message.trunc}#{reset}\n"
     end
 
+    ##
+    ## Display completion message
+    ##
+    ## @param      message  [String] The message
+    ##
     def finished(message)
-      warn "#{kill_line}#{to_ansi(:cyan, :bold)}FINISHED: #{white}#{message}#{reset}"
+      warn "#{kill_line}#{to_ansi(:cyan, :bold)}FINISHED: #{white}#{message.trunc(10)}#{reset}\n"
     end
 
+    ##
+    ## Display info message. Formats as white if coloring is enabled, resets to
+    ## beginning of line unless debugging
+    ##
+    ## @param      message  [String] The message
+    ##
     def info(message)
-      warn "#{kill_line}#{white} INFO: #{message}#{reset_line unless @debug}"
+      warn "#{kill_line}#{white} INFO: #{message.trunc}#{reset_line unless @debug}"
     end
+  end
+end
+
+# Table formatting, cleans up tables in content
+class TableCleanup
+  # Max cell width for formatting, defaults to 30
+  attr_writer :max_cell_width
+  # Max table width for formatting, defaults to 60
+  attr_writer :max_table_width
+  # The content to process
+  attr_writer :content
+
+  ##
+  ## Initialize a table cleaner
+  ##
+  ## @param      content  [String] The content to clean
+  ## @param      options  [Hash] The options
+  ##
+  def initialize(content = nil, options = nil)
+    @content = content ? content : ''
+    @max_cell_width = options && options[:max_cell_width] ? options[:max_cell_width] : 30
+    @max_table_width = options && options[:max_table_width] ? options[:max_table_width] : nil
+  end
+
+  ##
+  ## Split a row string on pipes
+  ##
+  ## @param      row   [String] The row string
+  ##
+  ## @return [Array] array of cell strings
+  ##
+  def parse_cells(row)
+    row.split('|').map(&:strip)[1..-1]
+  end
+
+  ##
+  ## Builds a formatted table
+  ##
+  ## @param      table [Array<Array>]   The table, an array of row arrays
+  ##
+  ## @return [String] the formatted table
+  ##
+  def build_table(table)
+    @widths = [0] * table.first.size
+
+    table.each do |row|
+      row.each_with_index do |cell, col|
+        @widths[col] = cell.size if @widths[col] < cell.size
+      end
+    end
+
+    @string = String.new
+
+    first_row = table.shift
+    render_row first_row
+    render_alignment
+
+    table.each do |row|
+      render_row row
+    end
+
+    @string
+  end
+
+  ##
+  ## Align content withing cell based on header alignments
+  ##
+  ## @param      string     [String] The string to align
+  ## @param      width      [Integer] The cell width
+  ##
+  ## @return [String] aligned string
+  ##
+  def align(alignment, string, width)
+    case alignment
+    when :left
+      string.ljust(width, ' ')
+    when :right
+      string.rjust(width, ' ')
+    when :center
+      string.center(width, ' ')
+    end
+  end
+
+  ##
+  ## Render a row
+  ##
+  ## @param      row     [Array] The row of cell contents
+  ##
+  ## @return [String] the formatted row
+  ##
+  def render_row(row)
+    idx = 0
+    @max_cell_width = @max_table_width / row.count if @max_table_width
+
+    @string << '|'
+    row.zip(@widths).each do |cell, width|
+      width = @max_cell_width - 2 if width >= @max_cell_width
+      content = @alignment ? align(@alignment[idx], cell, width) : cell.ljust(width, ' ')
+      @string << " #{content} |"
+      idx += 1
+    end
+    @string << "\n"
+  end
+
+  ##
+  ## Render the alignment row
+  ##
+  def render_alignment
+    @string << '|'
+    @alignment.zip(@widths).each do |align, width|
+      @string << ':' if align == :left
+      width = @max_cell_width - 2 if width >= @max_cell_width
+      @string << '-' * (width + (align == :center ? 2 : 1))
+      @string << ':' if align == :right
+      @string << '|'
+    end
+    @string << "\n"
+  end
+
+  ##
+  ## String helpers
+  ##
+  class ::String
+    ##
+    ## Ensure leading and trailing pipes
+    ##
+    ## @return     [String] string with pipes
+    ##
+    def ensure_pipes
+      strip.gsub(/^\|?(.*?)\|?$/, '|\1|')
+    end
+
+    def alignment?
+      self =~ /^[\s|:-]+$/ ? true : false
+    end
+  end
+
+  ##
+  ## Clean tables within content
+  ##
+  def clean
+    table_rx = /^(?ix)(?<table>
+    (?<header>\|?(?:.+?\|)+.*?)\s*\n
+    (?<align>\|?(?:[:-]+\|)+[:-]*)\s*\n
+    (?<rows>(?:\|?(?:.+?\|)+.*?(?:\n|\Z))+))/
+
+    tables = @content.to_enum(:scan, table_rx).map { Regexp.last_match }
+
+    table = []
+    tables.each do |t|
+      @alignment = parse_cells(t['align'].ensure_pipes).map do |cell|
+        if cell[0, 1] == ':' && cell[-1, 1] == ':'
+          :center
+        elsif cell[-1, 1] == ':'
+          :right
+        else
+          :left
+        end
+      end
+
+      lines = t['table'].split(/\n/)
+      lines.delete_if(&:alignment?)
+
+      lines.each do |row|
+        # Ensure leading and trailing pipes
+        row = row.ensure_pipes
+
+        cells = parse_cells(row)
+
+        table << cells
+      end
+
+      @content.sub!(/#{Regexp.escape(t['table'])}/, "#{build_table(table)}\n")
+    end
+    @content
   end
 end
 
@@ -283,6 +1031,13 @@ class HTML2Markdown
     end
   end
 
+  ##
+  ## Remove HTML tags from a table cell
+  ##
+  ## @param      content  [String] The cell content
+  ##
+  ## @return     [String] the cleaned content
+  ##
   def clean_cell(content)
     content.gsub!(%r{</?p>}, '')
     content.gsub!(%r{<li>(.*?)</li>}m, "- \\1\n")
@@ -293,15 +1048,21 @@ end
 
 # Main Confluence to Markdown class
 class Confluence2MD
-  include CLI
-
+  ##
+  ## Initialize a new Confluence2MD object
+  ##
+  ## @param      options  [Hash] The options
+  ##
   def initialize(options = {})
     defaults = {
       clean_dirs: false,
+      clean_tables: false,
       fix_headers: true,
       fix_hierarchy: true,
       fix_tables: false,
       include_source: false,
+      max_table_width: nil,
+      max_cell_width: 30,
       rename_files: true,
       strip_emoji: true,
       strip_meta: false,
@@ -388,10 +1149,6 @@ class Confluence2MD
   ## directories for stripped HTML and markdown output, with subdirectory for
   ## extracted images.
   ##
-  ## Currently fails to extract images because they're behind authentication.
-  ## I'm not sure if Confluence is able to include attached images in HTML
-  ## output, but I see that as the only way to make this work.
-  ##
   def all_html
     stripped_dir = File.expand_path('stripped')
     markdown_dir = File.expand_path('markdown')
@@ -428,12 +1185,7 @@ class Confluence2MD
                  else
                    File.join('markdown', "#{basename}.md")
                  end
-
-      content = content.strip_meta if @options[:strip_meta]
-      content = content.cleanup
-      content = content.strip_emoji if @options[:strip_emoji]
-      content = content.fix_headers if @options[:fix_headers]
-      content = content.fix_hierarchy if @options[:fix_hierarchy]
+      content.prepare_content!(@options)
 
       File.open(stripped, 'w') { |f| f.puts content }
 
@@ -451,6 +1203,12 @@ class Confluence2MD
       res.relative_paths!
       res.strip_comments!
       res.markdownify_images!
+      if @options[:clean_tables] && @options[:fix_tables]
+        tc = TableCleanup.new(res)
+        tc.max_cell_width = @options[:max_cell_width] if @options[:max_cell_width]
+        tc.max_table_width = @options[:max_table_width] if @options[:max_table_width]
+        res = tc.clean
+      end
 
       res.repoint_flattened! if @options[:flatten_attachments]
 
@@ -487,7 +1245,9 @@ class Confluence2MD
   ## Convert a single HTML file passed by path on the command line. Returns
   ## Markdown result as string for output to STDOUT.
   ##
-  ## @param      [String]  The Markdown result
+  ## @param      html  [String] the HTML file path
+  ##
+  ## @return     [String] The Markdown result
   ##
   def single_file(html)
     content = IO.read(html)
@@ -498,11 +1258,7 @@ class Confluence2MD
                  "#{title.slugify}.md"
                end
 
-    content = content.strip_meta if @options[:strip_meta]
-    content = content.cleanup
-    content = content.strip_emoji if @options[:strip_emoji]
-    content = content.fix_headers if @options[:fix_headers]
-    content = content.fix_hierarchy if @options[:fix_hierarchy]
+    content.prepare_content!(@options)
 
     res, err, status = Open3.capture3(%(echo #{Shellwords.escape(content)} | pandoc #{pandoc_options('--extract-media images')}))
     unless status.success?
@@ -513,6 +1269,12 @@ class Confluence2MD
 
     res = "#{res}\n\n<!--Source: #{html}-->\n" if @options[:include_source]
     res = res.fix_tables if @options[:fix_tables]
+    if @options[:clean_tables] && @options[:fix_tables]
+      tc = TableCleanup.new(res)
+      tc.max_cell_width = @options[:max_cell_width] if @options[:max_cell_width]
+      tc.max_table_width = @options[:max_table_width] if @options[:max_table_width]
+      res = tc.clean
+    end
     return res.relative_paths.strip_comments unless markdown
 
     CLI.info "#{html.trunc_middle(60)} => #{markdown}"
@@ -523,16 +1285,12 @@ class Confluence2MD
   ##
   ## Handle input from pipe and convert to Markdown
   ##
-  ## @param      input  [String] The HTML input
+  ## @param      content  [String] The HTML input
   ##
   ## @return     [String] Markdown output
   ##
   def handle_stdin(content)
-    content = content.strip_meta if @options[:strip_meta]
-    content = content.cleanup
-    content = content.strip_emoji if @options[:strip_emoji]
-    content = content.fix_headers if @options[:fix_headers]
-    content = content.fix_hierarchy if @options[:fix_hierarchy]
+    content.prepare_content!(@options)
     content = Shellwords.escape(content)
 
     res, err, status = Open3.capture3(%(echo #{content} | pandoc #{pandoc_options('--extract-media images')}))
@@ -543,6 +1301,12 @@ class Confluence2MD
     end
 
     res = res.fix_tables if @options[:fix_tables]
+    if @options[:clean_tables] && @options[:fix_tables]
+      tc = TableCleanup.new(res)
+      tc.max_cell_width = @options[:max_cell_width] if @options[:max_cell_width]
+      tc.max_table_width = @options[:max_table_width] if @options[:max_table_width]
+      res = tc.clean
+    end
     res.relative_paths.strip_comments
   end
 
@@ -876,6 +1640,34 @@ class Confluence2MD
     def markdownify_images!
       replace markdownify_images
     end
+
+    ##
+    ## Process HTML content based on options
+    ##
+    ## @param      options  [Hash] The options
+    ##
+    ## @return [String] processed content
+    ##
+    def prepare_content(options)
+      content = dup
+      content = content.strip_meta if options[:strip_meta]
+      content = content.cleanup
+      content = content.strip_emoji if options[:strip_emoji]
+      content = content.fix_headers if options[:fix_headers]
+      content = content.fix_hierarchy if options[:fix_hierarchy]
+      content
+    end
+
+    ##
+    ## Destructive version of #prepare_content
+    ##
+    ## @param      options  [Hash] The options
+    ##
+    ## @return [String] processed content
+    ##
+    def prepare_content!(options)
+      replace prepare_content(options)
+    end
   end
 
   ##
@@ -896,12 +1688,15 @@ end
 
 options = {
   clean_dirs: false,
+  clean_tables: false,
   color: true,
   debug: false,
   fix_headers: true,
   fix_hierarchy: true,
   fix_tables: false,
   flatten_attachments: true,
+  max_table_width: nil,
+  max_cell_width: 30,
   rename_files: true,
   include_source: false,
   strip_emoji: true,
@@ -939,14 +1734,21 @@ opt_parser = OptionParser.new do |opt|
     options[:strip_meta] = true
   end
 
-  opt.on('-t', '--[no-]fix-tables', 'Convert tables to Markdown (default false)') do |option|
+  opt.on('-t', '--[no-]convert-tables', 'Convert tables to Markdown (default false)') do |option|
     options[:fix_tables] = option
   end
 
-  # Hidden, compatibility with other CLI tools (--color=never/always/auto)
-  opt.on('--color WHEN') do |option|
-    options[:color] = option =~ /^[nf]/ ? false : true
-    CLI.coloring = options[:color]
+  opt.on('--clean-tables', 'Format converted tables, only valid with --convert-tables') do
+    options[:clean_tables] = true
+  end
+
+  opt.on('--max-table-width WIDTH', 'If using --clean-tables, define a maximum table width') do |option|
+    options[:max_table_width] = option.to_i
+  end
+
+  opt.on(['--max-cell-width WIDTH', 'If using --clean-tables, define a maximum cell width.',
+          'Overriden by --max_table_width'].join(' ')) do |option|
+    options[:max_cell_width] = option.to_i
   end
 
   opt.on('--[no-]flatten-images', 'Flatten attachments folder and update links (default true)') do |option|
@@ -961,6 +1763,7 @@ opt_parser = OptionParser.new do |opt|
     options[:include_source] = option
   end
 
+
   opt.on('--stdout', 'When operating on single file, output to STDOUT instead of filename') do
     options[:rename_files] = false
   end
@@ -969,8 +1772,17 @@ opt_parser = OptionParser.new do |opt|
     options[:update_links] = option
   end
 
+  opt.separator ''
+  opt.separator 'CLI'
+
   opt.on_tail('--[no-]colorize', 'Colorize command line messages with ANSI escape codes') do |option|
     options[:color] = option
+    CLI.coloring = options[:color]
+  end
+
+  # Compatibility with other CLI tools
+  opt.on('--color WHEN', 'Colorize terminal output, "always, never, auto?"') do |option|
+    options[:color] = option =~ /^[nf]/ ? false : true
     CLI.coloring = options[:color]
   end
 
@@ -991,6 +1803,8 @@ opt_parser = OptionParser.new do |opt|
 end
 
 opt_parser.parse!
+
+options[:clean_tables] = options[:fix_tables] ? options[:clean_tables] : false
 
 c2m = Confluence2MD.new(options)
 
