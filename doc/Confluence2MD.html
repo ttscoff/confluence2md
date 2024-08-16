@@ -94,7 +94,9 @@
   
   <dl>
     <dt>Defined in:</dt>
-    <dd>confluence_to_md.rb</dd>
+    <dd>confluence_to_md.rb<span class="defines">,<br />
+  confluence_to_md_test.rb,<br /> test/CLOUDSHELL/confluence_to_md.rb</span>
+</dd>
   </dl>
   
 </div>
@@ -112,6 +114,39 @@
 </div>
 
 
+
+  <h2>Instance Attribute Summary <small><a href="#" class="summary_toggle">collapse</a></small></h2>
+  <ul class="summary">
+    
+      <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#version-instance_method" title="#version (instance method)">#<strong>version</strong>  &#x21d2; Object </a>
+    
+
+    
+  </span>
+  
+  
+  
+    
+      <span class="note title readonly">readonly</span>
+    
+    
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'><p>VERSION number.</p>
+</div></span>
+  
+</li>
+
+    
+  </ul>
 
 
 
@@ -142,6 +177,29 @@
 
   
     <span class="summary_desc"><div class='inline'><p>Convert all HTML files in current directory to Markdown.</p>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#clean_images_folder-instance_method" title="#clean_images_folder (instance method)">#<strong>clean_images_folder</strong>  &#x21d2; Object </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'><p>Delete images/images folder if it exists.</p>
 </div></span>
   
 </li>
@@ -235,7 +293,7 @@
   
 
   
-    <span class="summary_desc"><div class='inline'><p>A new instance of Confluence2MD.</p>
+    <span class="summary_desc"><div class='inline'><p>Initialize a new Confluence2MD object.</p>
 </div></span>
   
 </li>
@@ -310,29 +368,6 @@
 </li>
 
       
-        <li class="public ">
-  <span class="summary_signature">
-    
-      <a href="#version-instance_method" title="#version (instance method)">#<strong>version</strong>  &#x21d2; String </a>
-    
-
-    
-  </span>
-  
-  
-  
-  
-  
-  
-  
-
-  
-    <span class="summary_desc"><div class='inline'><p>Return script version (requires it be run from within repository where VERSION file exists).</p>
-</div></span>
-  
-</li>
-
-      
     </ul>
   
 
@@ -350,7 +385,107 @@
   
 </h3><div class="docstring">
   <div class="discussion">
-    <p>Returns a new instance of Confluence2MD.</p>
+    <p>Initialize a new Confluence2MD object</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  <p class="tag_title">Parameters:</p>
+<ul class="param">
+  
+    <li>
+      
+        <span class='name'>options</span>
+      
+      
+        <span class='type'>(<tt>Hash</tt>)</span>
+      
+      
+        <em class="default">(defaults to: <tt>{}</tt>)</em>
+      
+      
+        &mdash;
+        <div class='inline'><p>The options</p>
+</div>
+      
+    </li>
+  
+</ul>
+
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+1056
+1057
+1058
+1059
+1060
+1061
+1062
+1063
+1064
+1065
+1066
+1067
+1068
+1069
+1070
+1071
+1072
+1073
+1074</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'confluence_to_md.rb', line 1056</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_initialize'>initialize</span><span class='lparen'>(</span><span class='id identifier rubyid_options'>options</span> <span class='op'>=</span> <span class='lbrace'>{</span><span class='rbrace'>}</span><span class='rparen'>)</span>
+  <span class='id identifier rubyid_defaults'>defaults</span> <span class='op'>=</span> <span class='lbrace'>{</span>
+    <span class='label'>clean_dirs:</span> <span class='kw'>false</span><span class='comma'>,</span>
+    <span class='label'>clean_tables:</span> <span class='kw'>false</span><span class='comma'>,</span>
+    <span class='label'>fix_headers:</span> <span class='kw'>true</span><span class='comma'>,</span>
+    <span class='label'>fix_hierarchy:</span> <span class='kw'>true</span><span class='comma'>,</span>
+    <span class='label'>fix_tables:</span> <span class='kw'>false</span><span class='comma'>,</span>
+    <span class='label'>include_source:</span> <span class='kw'>false</span><span class='comma'>,</span>
+    <span class='label'>max_table_width:</span> <span class='kw'>nil</span><span class='comma'>,</span>
+    <span class='label'>max_cell_width:</span> <span class='int'>30</span><span class='comma'>,</span>
+    <span class='label'>rename_files:</span> <span class='kw'>true</span><span class='comma'>,</span>
+    <span class='label'>strip_emoji:</span> <span class='kw'>true</span><span class='comma'>,</span>
+    <span class='label'>strip_meta:</span> <span class='kw'>false</span><span class='comma'>,</span>
+    <span class='label'>update_links:</span> <span class='kw'>true</span>
+  <span class='rbrace'>}</span>
+  <span class='ivar'>@options</span> <span class='op'>=</span> <span class='id identifier rubyid_defaults'>defaults</span><span class='period'>.</span><span class='id identifier rubyid_merge'>merge</span><span class='lparen'>(</span><span class='id identifier rubyid_options'>options</span><span class='rparen'>)</span>
+  <span class='const'><span class='object_link'><a href="CLI.html" title="CLI (module)">CLI</a></span></span><span class='period'>.</span><span class='id identifier rubyid_debug'><span class='object_link'><a href="CLI.html#debug-class_method" title="CLI.debug (method)">debug</a></span></span> <span class='op'>=</span> <span class='id identifier rubyid_options'>options</span><span class='lbracket'>[</span><span class='symbol'>:debug</span><span class='rbracket'>]</span> <span class='op'>||</span> <span class='kw'>false</span>
+  <span class='const'><span class='object_link'><a href="CLI.html" title="CLI (module)">CLI</a></span></span><span class='period'>.</span><span class='id identifier rubyid_coloring'>coloring</span> <span class='op'>=</span> <span class='id identifier rubyid_options'>options</span><span class='lbracket'>[</span><span class='symbol'>:color</span><span class='rbracket'>]</span> <span class='op'>?</span> <span class='kw'>true</span> <span class='op'>:</span> <span class='kw'>false</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+  
+</div>
+
+  <div id="instance_attr_details" class="attr_details">
+    <h2>Instance Attribute Details</h2>
+    
+      
+      <span id=""></span>
+      <div class="method_details first">
+  <h3 class="signature first" id="version-instance_method">
+  
+    #<strong>version</strong>  &#x21d2; <tt>Object</tt>  <span class="extras">(readonly)</span>
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    <p>VERSION number</p>
 
 
   </div>
@@ -364,44 +499,34 @@
       <pre class="lines">
 
 
-215
-216
-217
-218
-219
-220
-221
-222
-223
-224
-225
-226
-227
-228</pre>
+1678
+1679
+1680
+1681
+1682
+1683
+1684
+1685
+1686</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'confluence_to_md.rb', line 215</span>
+      <pre class="code"><span class="info file"># File 'confluence_to_md.rb', line 1678</span>
 
-<span class='kw'>def</span> <span class='id identifier rubyid_initialize'>initialize</span><span class='lparen'>(</span><span class='id identifier rubyid_options'>options</span> <span class='op'>=</span> <span class='lbrace'>{</span><span class='rbrace'>}</span><span class='rparen'>)</span>
-  <span class='id identifier rubyid_defaults'>defaults</span> <span class='op'>=</span> <span class='lbrace'>{</span>
-    <span class='label'>clean_dirs:</span> <span class='kw'>false</span><span class='comma'>,</span>
-    <span class='label'>fix_headers:</span> <span class='kw'>true</span><span class='comma'>,</span>
-    <span class='label'>fix_hierarchy:</span> <span class='kw'>true</span><span class='comma'>,</span>
-    <span class='label'>fix_tables:</span> <span class='kw'>false</span><span class='comma'>,</span>
-    <span class='label'>include_source:</span> <span class='kw'>false</span><span class='comma'>,</span>
-    <span class='label'>rename_files:</span> <span class='kw'>true</span><span class='comma'>,</span>
-    <span class='label'>strip_emoji:</span> <span class='kw'>true</span><span class='comma'>,</span>
-    <span class='label'>strip_meta:</span> <span class='kw'>false</span><span class='comma'>,</span>
-    <span class='label'>update_links:</span> <span class='kw'>true</span>
-  <span class='rbrace'>}</span>
-  <span class='ivar'>@options</span> <span class='op'>=</span> <span class='id identifier rubyid_defaults'>defaults</span><span class='period'>.</span><span class='id identifier rubyid_merge'>merge</span><span class='lparen'>(</span><span class='id identifier rubyid_options'>options</span><span class='rparen'>)</span>
+<span class='kw'>def</span> <span class='id identifier rubyid_version'>version</span>
+  <span class='id identifier rubyid_version_file'>version_file</span> <span class='op'>=</span> <span class='const'>File</span><span class='period'>.</span><span class='id identifier rubyid_join'>join</span><span class='lparen'>(</span><span class='const'>File</span><span class='period'>.</span><span class='id identifier rubyid_dirname'>dirname</span><span class='lparen'>(</span><span class='const'>File</span><span class='period'>.</span><span class='id identifier rubyid_realdirpath'>realdirpath</span><span class='lparen'>(</span><span class='kw'>__FILE__</span><span class='rparen'>)</span><span class='rparen'>)</span><span class='comma'>,</span> <span class='tstring'><span class='tstring_beg'>&#39;</span><span class='tstring_content'>VERSION</span><span class='tstring_end'>&#39;</span></span><span class='rparen'>)</span>
+  <span class='kw'>if</span> <span class='const'>File</span><span class='period'>.</span><span class='id identifier rubyid_exist?'>exist?</span><span class='lparen'>(</span><span class='id identifier rubyid_version_file'>version_file</span><span class='rparen'>)</span>
+    <span class='id identifier rubyid_version'>version</span> <span class='op'>=</span> <span class='const'>IO</span><span class='period'>.</span><span class='id identifier rubyid_read'>read</span><span class='lparen'>(</span><span class='id identifier rubyid_version_file'>version_file</span><span class='rparen'>)</span><span class='period'>.</span><span class='id identifier rubyid_strip'>strip</span>
+    <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>v</span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_version'>version</span><span class='embexpr_end'>}</span><span class='tstring_end'>&quot;</span></span>
+  <span class='kw'>else</span>
+    <span class='tstring'><span class='tstring_beg'>&#39;</span><span class='tstring_content'>(version unavailable)</span><span class='tstring_end'>&#39;</span></span>
+  <span class='kw'>end</span>
 <span class='kw'>end</span></pre>
     </td>
   </tr>
 </table>
 </div>
-  
-</div>
+    
+  </div>
 
 
   <div id="instance_method_details" class="method_details_list">
@@ -439,79 +564,90 @@ output, but I see that as the only way to make this work.</p>
       <pre class="lines">
 
 
-307
-308
-309
-310
-311
-312
-313
-314
-315
-316
-317
-318
-319
-320
-321
-322
-323
-324
-325
-326
-327
-328
-329
-330
-331
-332
-333
-334
-335
-336
-337
-338
-339
-340
-341
-342
-343
-344
-345
-346
-347
-348
-349
-350
-351
-352
-353
-354
-355
-356
-357
-358
-359
-360
-361
-362
-363
-364
-365
-366
-367
-368
-369</pre>
+1152
+1153
+1154
+1155
+1156
+1157
+1158
+1159
+1160
+1161
+1162
+1163
+1164
+1165
+1166
+1167
+1168
+1169
+1170
+1171
+1172
+1173
+1174
+1175
+1176
+1177
+1178
+1179
+1180
+1181
+1182
+1183
+1184
+1185
+1186
+1187
+1188
+1189
+1190
+1191
+1192
+1193
+1194
+1195
+1196
+1197
+1198
+1199
+1200
+1201
+1202
+1203
+1204
+1205
+1206
+1207
+1208
+1209
+1210
+1211
+1212
+1213
+1214
+1215
+1216
+1217
+1218
+1219
+1220
+1221
+1222
+1223
+1224
+1225</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'confluence_to_md.rb', line 307</span>
+      <pre class="code"><span class="info file"># File 'confluence_to_md.rb', line 1152</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_all_html'>all_html</span>
   <span class='id identifier rubyid_stripped_dir'>stripped_dir</span> <span class='op'>=</span> <span class='const'>File</span><span class='period'>.</span><span class='id identifier rubyid_expand_path'>expand_path</span><span class='lparen'>(</span><span class='tstring'><span class='tstring_beg'>&#39;</span><span class='tstring_content'>stripped</span><span class='tstring_end'>&#39;</span></span><span class='rparen'>)</span>
   <span class='id identifier rubyid_markdown_dir'>markdown_dir</span> <span class='op'>=</span> <span class='const'>File</span><span class='period'>.</span><span class='id identifier rubyid_expand_path'>expand_path</span><span class='lparen'>(</span><span class='tstring'><span class='tstring_beg'>&#39;</span><span class='tstring_content'>markdown</span><span class='tstring_end'>&#39;</span></span><span class='rparen'>)</span>
 
   <span class='kw'>if</span> <span class='ivar'>@options</span><span class='lbracket'>[</span><span class='symbol'>:clean_dirs</span><span class='rbracket'>]</span>
-    <span class='id identifier rubyid_warn'>warn</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>Cleaning out markdown directories</span><span class='tstring_end'>&quot;</span></span>
+    <span class='const'><span class='object_link'><a href="CLI.html" title="CLI (module)">CLI</a></span></span><span class='period'>.</span><span class='id identifier rubyid_alert'><span class='object_link'><a href="CLI.html#alert-class_method" title="CLI.alert (method)">alert</a></span></span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>Cleaning out markdown directories</span><span class='tstring_end'>&quot;</span></span>
 
     <span class='comment'># Clear out previous runs
 </span>    <span class='const'>FileUtils</span><span class='period'>.</span><span class='id identifier rubyid_rm_rf'>rm_rf</span><span class='lparen'>(</span><span class='id identifier rubyid_stripped_dir'>stripped_dir</span><span class='rparen'>)</span> <span class='kw'>if</span> <span class='const'>File</span><span class='period'>.</span><span class='id identifier rubyid_exist?'>exist?</span><span class='lparen'>(</span><span class='id identifier rubyid_stripped_dir'>stripped_dir</span><span class='rparen'>)</span>
@@ -527,8 +663,10 @@ output, but I see that as the only way to make this work.</p>
   <span class='kw'>end</span>
 
   <span class='id identifier rubyid_index_h'>index_h</span> <span class='op'>=</span> <span class='lbrace'>{</span><span class='rbrace'>}</span>
+  <span class='id identifier rubyid_counter'>counter</span> <span class='op'>=</span> <span class='int'>0</span>
 
   <span class='const'>Dir</span><span class='period'>.</span><span class='id identifier rubyid_glob'>glob</span><span class='lparen'>(</span><span class='tstring'><span class='tstring_beg'>&#39;</span><span class='tstring_content'>*.html</span><span class='tstring_end'>&#39;</span></span><span class='rparen'>)</span> <span class='kw'>do</span> <span class='op'>|</span><span class='id identifier rubyid_html'>html</span><span class='op'>|</span>
+    <span class='id identifier rubyid_counter'>counter</span> <span class='op'>+=</span> <span class='int'>1</span>
     <span class='id identifier rubyid_content'>content</span> <span class='op'>=</span> <span class='const'>IO</span><span class='period'>.</span><span class='id identifier rubyid_read'>read</span><span class='lparen'>(</span><span class='id identifier rubyid_html'>html</span><span class='rparen'>)</span>
     <span class='id identifier rubyid_basename'>basename</span> <span class='op'>=</span> <span class='const'>File</span><span class='period'>.</span><span class='id identifier rubyid_basename'>basename</span><span class='lparen'>(</span><span class='id identifier rubyid_html'>html</span><span class='comma'>,</span> <span class='tstring'><span class='tstring_beg'>&#39;</span><span class='tstring_content'>.html</span><span class='tstring_end'>&#39;</span></span><span class='rparen'>)</span>
     <span class='id identifier rubyid_stripped'>stripped</span> <span class='op'>=</span> <span class='const'>File</span><span class='period'>.</span><span class='id identifier rubyid_join'>join</span><span class='lparen'>(</span><span class='tstring'><span class='tstring_beg'>&#39;</span><span class='tstring_content'>stripped</span><span class='tstring_end'>&#39;</span></span><span class='comma'>,</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_basename'>basename</span><span class='embexpr_end'>}</span><span class='tstring_content'>.html</span><span class='tstring_end'>&quot;</span></span><span class='rparen'>)</span>
@@ -540,23 +678,30 @@ output, but I see that as the only way to make this work.</p>
                <span class='kw'>else</span>
                  <span class='const'>File</span><span class='period'>.</span><span class='id identifier rubyid_join'>join</span><span class='lparen'>(</span><span class='tstring'><span class='tstring_beg'>&#39;</span><span class='tstring_content'>markdown</span><span class='tstring_end'>&#39;</span></span><span class='comma'>,</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_basename'>basename</span><span class='embexpr_end'>}</span><span class='tstring_content'>.md</span><span class='tstring_end'>&quot;</span></span><span class='rparen'>)</span>
                <span class='kw'>end</span>
-
-    <span class='id identifier rubyid_content'>content</span> <span class='op'>=</span> <span class='id identifier rubyid_content'>content</span><span class='period'>.</span><span class='id identifier rubyid_strip_meta'>strip_meta</span> <span class='kw'>if</span> <span class='ivar'>@options</span><span class='lbracket'>[</span><span class='symbol'>:strip_meta</span><span class='rbracket'>]</span>
-    <span class='id identifier rubyid_content'>content</span> <span class='op'>=</span> <span class='id identifier rubyid_content'>content</span><span class='period'>.</span><span class='id identifier rubyid_cleanup'>cleanup</span>
-    <span class='id identifier rubyid_content'>content</span> <span class='op'>=</span> <span class='id identifier rubyid_content'>content</span><span class='period'>.</span><span class='id identifier rubyid_strip_emoji'>strip_emoji</span> <span class='kw'>if</span> <span class='ivar'>@options</span><span class='lbracket'>[</span><span class='symbol'>:strip_emoji</span><span class='rbracket'>]</span>
-    <span class='id identifier rubyid_content'>content</span> <span class='op'>=</span> <span class='id identifier rubyid_content'>content</span><span class='period'>.</span><span class='id identifier rubyid_fix_headers'>fix_headers</span> <span class='kw'>if</span> <span class='ivar'>@options</span><span class='lbracket'>[</span><span class='symbol'>:fix_headers</span><span class='rbracket'>]</span>
-    <span class='id identifier rubyid_content'>content</span> <span class='op'>=</span> <span class='id identifier rubyid_content'>content</span><span class='period'>.</span><span class='id identifier rubyid_fix_hierarchy'>fix_hierarchy</span> <span class='kw'>if</span> <span class='ivar'>@options</span><span class='lbracket'>[</span><span class='symbol'>:fix_hierarchy</span><span class='rbracket'>]</span>
+    <span class='id identifier rubyid_content'>content</span><span class='period'>.</span><span class='id identifier rubyid_prepare_content!'>prepare_content!</span><span class='lparen'>(</span><span class='ivar'>@options</span><span class='rparen'>)</span>
 
     <span class='const'>File</span><span class='period'>.</span><span class='id identifier rubyid_open'>open</span><span class='lparen'>(</span><span class='id identifier rubyid_stripped'>stripped</span><span class='comma'>,</span> <span class='tstring'><span class='tstring_beg'>&#39;</span><span class='tstring_content'>w</span><span class='tstring_end'>&#39;</span></span><span class='rparen'>)</span> <span class='lbrace'>{</span> <span class='op'>|</span><span class='id identifier rubyid_f'>f</span><span class='op'>|</span> <span class='id identifier rubyid_f'>f</span><span class='period'>.</span><span class='id identifier rubyid_puts'>puts</span> <span class='id identifier rubyid_content'>content</span> <span class='rbrace'>}</span>
 
-    <span class='id identifier rubyid_res'>res</span> <span class='op'>=</span> <span class='backtick'>`</span><span class='tstring_content'>pandoc </span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_pandoc_options'>pandoc_options</span><span class='lparen'>(</span><span class='tstring'><span class='tstring_beg'>&#39;</span><span class='tstring_content'>--extract-media markdown/images</span><span class='tstring_end'>&#39;</span></span><span class='rparen'>)</span><span class='embexpr_end'>}</span><span class='tstring_content'> &quot;</span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_stripped'>stripped</span><span class='embexpr_end'>}</span><span class='tstring_content'>&quot; 2&gt; /dev/null</span><span class='tstring_end'>`</span></span>
-    <span class='id identifier rubyid_warn'>warn</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_html'>html</span><span class='embexpr_end'>}</span><span class='tstring_content'> =&gt; </span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_markdown'>markdown</span><span class='embexpr_end'>}</span><span class='tstring_end'>&quot;</span></span>
+    <span class='id identifier rubyid_res'>res</span><span class='comma'>,</span> <span class='id identifier rubyid_err'>err</span><span class='comma'>,</span> <span class='id identifier rubyid_status'>status</span> <span class='op'>=</span> <span class='const'>Open3</span><span class='period'>.</span><span class='id identifier rubyid_capture3'>capture3</span><span class='lparen'>(</span><span class='tstring'><span class='tstring_beg'>%(</span><span class='tstring_content'>pandoc </span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_pandoc_options'>pandoc_options</span><span class='lparen'>(</span><span class='tstring'><span class='tstring_beg'>&#39;</span><span class='tstring_content'>--extract-media markdown/images</span><span class='tstring_end'>&#39;</span></span><span class='rparen'>)</span><span class='embexpr_end'>}</span><span class='tstring_content'> &quot;</span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_stripped'>stripped</span><span class='embexpr_end'>}</span><span class='tstring_content'>&quot;</span><span class='tstring_end'>)</span></span><span class='rparen'>)</span>
+    <span class='kw'>unless</span> <span class='id identifier rubyid_status'>status</span><span class='period'>.</span><span class='id identifier rubyid_success?'>success?</span>
+      <span class='const'><span class='object_link'><a href="CLI.html" title="CLI (module)">CLI</a></span></span><span class='period'>.</span><span class='id identifier rubyid_error'><span class='object_link'><a href="CLI.html#error-class_method" title="CLI.error (method)">error</a></span></span><span class='lparen'>(</span><span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>Failed to run pandoc on </span><span class='embexpr_beg'>#{</span><span class='const'>File</span><span class='period'>.</span><span class='id identifier rubyid_basename'>basename</span><span class='lparen'>(</span><span class='id identifier rubyid_stripped'>stripped</span><span class='rparen'>)</span><span class='embexpr_end'>}</span><span class='tstring_end'>&quot;</span></span><span class='rparen'>)</span>
+      <span class='const'><span class='object_link'><a href="CLI.html" title="CLI (module)">CLI</a></span></span><span class='period'>.</span><span class='id identifier rubyid_debug'><span class='object_link'><a href="CLI.html#debug-class_method" title="CLI.debug (method)">debug</a></span></span> <span class='id identifier rubyid_err'>err</span>
+      <span class='kw'>next</span>
+    <span class='kw'>end</span>
+
+    <span class='const'><span class='object_link'><a href="CLI.html" title="CLI (module)">CLI</a></span></span><span class='period'>.</span><span class='id identifier rubyid_info'><span class='object_link'><a href="CLI.html#info-class_method" title="CLI.info (method)">info</a></span></span><span class='lparen'>(</span><span class='tstring'><span class='tstring_beg'>&quot;</span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_html'>html</span><span class='period'>.</span><span class='id identifier rubyid_trunc_middle'>trunc_middle</span><span class='lparen'>(</span><span class='int'>60</span><span class='rparen'>)</span><span class='embexpr_end'>}</span><span class='tstring_content'> =&gt; </span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_markdown'>markdown</span><span class='period'>.</span><span class='id identifier rubyid_trunc_middle'>trunc_middle</span><span class='lparen'>(</span><span class='int'>60</span><span class='rparen'>)</span><span class='embexpr_end'>}</span><span class='tstring_end'>&quot;</span></span><span class='rparen'>)</span>
     <span class='id identifier rubyid_res'>res</span> <span class='op'>=</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_res'>res</span><span class='embexpr_end'>}</span><span class='tstring_content'>\n\n&lt;!--Source: </span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_html'>html</span><span class='embexpr_end'>}</span><span class='tstring_content'>--&gt;\n</span><span class='tstring_end'>&quot;</span></span> <span class='kw'>if</span> <span class='ivar'>@options</span><span class='lbracket'>[</span><span class='symbol'>:include_source</span><span class='rbracket'>]</span>
     <span class='id identifier rubyid_res'>res</span> <span class='op'>=</span> <span class='id identifier rubyid_res'>res</span><span class='period'>.</span><span class='id identifier rubyid_fix_tables'>fix_tables</span> <span class='kw'>if</span> <span class='ivar'>@options</span><span class='lbracket'>[</span><span class='symbol'>:fix_tables</span><span class='rbracket'>]</span>
 
     <span class='id identifier rubyid_res'>res</span><span class='period'>.</span><span class='id identifier rubyid_relative_paths!'>relative_paths!</span>
     <span class='id identifier rubyid_res'>res</span><span class='period'>.</span><span class='id identifier rubyid_strip_comments!'>strip_comments!</span>
     <span class='id identifier rubyid_res'>res</span><span class='period'>.</span><span class='id identifier rubyid_markdownify_images!'>markdownify_images!</span>
+    <span class='kw'>if</span> <span class='ivar'>@options</span><span class='lbracket'>[</span><span class='symbol'>:clean_tables</span><span class='rbracket'>]</span> <span class='op'>&amp;&amp;</span> <span class='ivar'>@options</span><span class='lbracket'>[</span><span class='symbol'>:fix_tables</span><span class='rbracket'>]</span>
+      <span class='id identifier rubyid_tc'>tc</span> <span class='op'>=</span> <span class='const'><span class='object_link'><a href="TableCleanup.html" title="TableCleanup (class)">TableCleanup</a></span></span><span class='period'>.</span><span class='id identifier rubyid_new'><span class='object_link'><a href="TableCleanup.html#initialize-instance_method" title="TableCleanup#initialize (method)">new</a></span></span><span class='lparen'>(</span><span class='id identifier rubyid_res'>res</span><span class='rparen'>)</span>
+      <span class='id identifier rubyid_tc'>tc</span><span class='period'>.</span><span class='id identifier rubyid_max_cell_width'>max_cell_width</span> <span class='op'>=</span> <span class='ivar'>@options</span><span class='lbracket'>[</span><span class='symbol'>:max_cell_width</span><span class='rbracket'>]</span> <span class='kw'>if</span> <span class='ivar'>@options</span><span class='lbracket'>[</span><span class='symbol'>:max_cell_width</span><span class='rbracket'>]</span>
+      <span class='id identifier rubyid_tc'>tc</span><span class='period'>.</span><span class='id identifier rubyid_max_table_width'>max_table_width</span> <span class='op'>=</span> <span class='ivar'>@options</span><span class='lbracket'>[</span><span class='symbol'>:max_table_width</span><span class='rbracket'>]</span> <span class='kw'>if</span> <span class='ivar'>@options</span><span class='lbracket'>[</span><span class='symbol'>:max_table_width</span><span class='rbracket'>]</span>
+      <span class='id identifier rubyid_res'>res</span> <span class='op'>=</span> <span class='id identifier rubyid_tc'>tc</span><span class='period'>.</span><span class='id identifier rubyid_clean'>clean</span>
+    <span class='kw'>end</span>
 
     <span class='id identifier rubyid_res'>res</span><span class='period'>.</span><span class='id identifier rubyid_repoint_flattened!'>repoint_flattened!</span> <span class='kw'>if</span> <span class='ivar'>@options</span><span class='lbracket'>[</span><span class='symbol'>:flatten_attachments</span><span class='rbracket'>]</span>
 
@@ -568,6 +713,56 @@ output, but I see that as the only way to make this work.</p>
 </span>  <span class='id identifier rubyid_update_links'>update_links</span><span class='lparen'>(</span><span class='id identifier rubyid_index_h'>index_h</span><span class='rparen'>)</span> <span class='kw'>if</span> <span class='ivar'>@options</span><span class='lbracket'>[</span><span class='symbol'>:rename_files</span><span class='rbracket'>]</span> <span class='op'>&amp;&amp;</span> <span class='ivar'>@options</span><span class='lbracket'>[</span><span class='symbol'>:update_links</span><span class='rbracket'>]</span>
   <span class='comment'># Delete interim HTML directory
 </span>  <span class='const'>FileUtils</span><span class='period'>.</span><span class='id identifier rubyid_rm_f'>rm_f</span><span class='lparen'>(</span><span class='tstring'><span class='tstring_beg'>&#39;</span><span class='tstring_content'>stripped</span><span class='tstring_end'>&#39;</span></span><span class='rparen'>)</span>
+  <span class='id identifier rubyid_clean_images_folder'>clean_images_folder</span>
+  <span class='const'><span class='object_link'><a href="CLI.html" title="CLI (module)">CLI</a></span></span><span class='period'>.</span><span class='id identifier rubyid_finished'><span class='object_link'><a href="CLI.html#finished-class_method" title="CLI.finished (method)">finished</a></span></span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>Processed </span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_counter'>counter</span><span class='embexpr_end'>}</span><span class='tstring_content'> files</span><span class='tstring_end'>&quot;</span></span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="clean_images_folder-instance_method">
+  
+    #<strong>clean_images_folder</strong>  &#x21d2; <tt>Object</tt> 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    <p>Delete images/images folder if it exists</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+1139
+1140
+1141
+1142
+1143
+1144
+1145</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'confluence_to_md.rb', line 1139</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_clean_images_folder'>clean_images_folder</span>
+  <span class='id identifier rubyid_folder'>folder</span> <span class='op'>=</span> <span class='const'>File</span><span class='period'>.</span><span class='id identifier rubyid_expand_path'>expand_path</span><span class='lparen'>(</span><span class='tstring'><span class='tstring_beg'>&#39;</span><span class='tstring_content'>images/images</span><span class='tstring_end'>&#39;</span></span><span class='rparen'>)</span>
+  <span class='kw'>if</span> <span class='const'>File</span><span class='period'>.</span><span class='id identifier rubyid_directory?'>directory?</span><span class='lparen'>(</span><span class='id identifier rubyid_folder'>folder</span><span class='rparen'>)</span>
+    <span class='const'><span class='object_link'><a href="CLI.html" title="CLI (module)">CLI</a></span></span><span class='period'>.</span><span class='id identifier rubyid_alert'><span class='object_link'><a href="CLI.html#alert-class_method" title="CLI.alert (method)">alert</a></span></span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>Deleting images/images folder</span><span class='tstring_end'>&quot;</span></span>
+    <span class='const'>FileUtils</span><span class='period'>.</span><span class='id identifier rubyid_rm_rf'>rm_rf</span><span class='lparen'>(</span><span class='id identifier rubyid_folder'>folder</span><span class='rparen'>)</span>
+  <span class='kw'>end</span>
 <span class='kw'>end</span></pre>
     </td>
   </tr>
@@ -599,41 +794,33 @@ output, but I see that as the only way to make this work.</p>
       <pre class="lines">
 
 
-250
-251
-252
-253
-254
-255
-256
-257
-258
-259
-260
-261
-262
-263
-264
-265</pre>
+1096
+1097
+1098
+1099
+1100
+1101
+1102
+1103
+1104
+1105
+1106
+1107</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'confluence_to_md.rb', line 250</span>
+      <pre class="code"><span class="info file"># File 'confluence_to_md.rb', line 1096</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_copy_attachments'>copy_attachments</span><span class='lparen'>(</span><span class='id identifier rubyid_markdown_dir'>markdown_dir</span><span class='rparen'>)</span>
   <span class='id identifier rubyid_target'>target</span> <span class='op'>=</span> <span class='const'>File</span><span class='period'>.</span><span class='id identifier rubyid_expand_path'>expand_path</span><span class='lparen'>(</span><span class='tstring'><span class='tstring_beg'>&#39;</span><span class='tstring_content'>attachments</span><span class='tstring_end'>&#39;</span></span><span class='rparen'>)</span>
 
+  <span class='id identifier rubyid_target'>target</span> <span class='op'>=</span> <span class='const'>File</span><span class='period'>.</span><span class='id identifier rubyid_expand_path'>expand_path</span><span class='lparen'>(</span><span class='tstring'><span class='tstring_beg'>&#39;</span><span class='tstring_content'>images/attachments</span><span class='tstring_end'>&#39;</span></span><span class='rparen'>)</span> <span class='kw'>unless</span> <span class='const'>File</span><span class='period'>.</span><span class='id identifier rubyid_directory?'>directory?</span><span class='lparen'>(</span><span class='id identifier rubyid_target'>target</span><span class='rparen'>)</span>
   <span class='kw'>unless</span> <span class='const'>File</span><span class='period'>.</span><span class='id identifier rubyid_directory?'>directory?</span><span class='lparen'>(</span><span class='id identifier rubyid_target'>target</span><span class='rparen'>)</span>
-    <span class='id identifier rubyid_warn'>warn</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>Attachments directory not found </span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_target'>target</span><span class='embexpr_end'>}</span><span class='tstring_end'>&quot;</span></span>
-    <span class='id identifier rubyid_target'>target</span> <span class='op'>=</span> <span class='const'>File</span><span class='period'>.</span><span class='id identifier rubyid_expand_path'>expand_path</span><span class='lparen'>(</span><span class='tstring'><span class='tstring_beg'>&#39;</span><span class='tstring_content'>images/attachments</span><span class='tstring_end'>&#39;</span></span><span class='rparen'>)</span>
-  <span class='kw'>end</span>
-
-  <span class='kw'>unless</span> <span class='const'>File</span><span class='period'>.</span><span class='id identifier rubyid_directory?'>directory?</span><span class='lparen'>(</span><span class='id identifier rubyid_target'>target</span><span class='rparen'>)</span>
-    <span class='id identifier rubyid_warn'>warn</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>Attachments directory not found </span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_target'>target</span><span class='embexpr_end'>}</span><span class='tstring_end'>&quot;</span></span>
+    <span class='const'><span class='object_link'><a href="CLI.html" title="CLI (module)">CLI</a></span></span><span class='period'>.</span><span class='id identifier rubyid_alert'><span class='object_link'><a href="CLI.html#alert-class_method" title="CLI.alert (method)">alert</a></span></span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>Attachments directory not found </span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_target'>target</span><span class='embexpr_end'>}</span><span class='tstring_end'>&quot;</span></span>
     <span class='kw'>return</span>
   <span class='kw'>end</span>
 
   <span class='const'>FileUtils</span><span class='period'>.</span><span class='id identifier rubyid_cp_r'>cp_r</span><span class='lparen'>(</span><span class='id identifier rubyid_target'>target</span><span class='comma'>,</span> <span class='id identifier rubyid_markdown_dir'>markdown_dir</span><span class='rparen'>)</span>
-  <span class='id identifier rubyid_warn'>warn</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>Copied </span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_target'>target</span><span class='embexpr_end'>}</span><span class='tstring_content'> to </span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_markdown_dir'>markdown_dir</span><span class='embexpr_end'>}</span><span class='tstring_end'>&quot;</span></span>
+  <span class='const'><span class='object_link'><a href="CLI.html" title="CLI (module)">CLI</a></span></span><span class='period'>.</span><span class='id identifier rubyid_info'><span class='object_link'><a href="CLI.html#info-class_method" title="CLI.info (method)">info</a></span></span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>Copied </span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_target'>target</span><span class='period'>.</span><span class='id identifier rubyid_trunc_middle'>trunc_middle</span><span class='lparen'>(</span><span class='int'>60</span><span class='rparen'>)</span><span class='embexpr_end'>}</span><span class='tstring_content'> to </span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_markdown_dir'>markdown_dir</span><span class='embexpr_end'>}</span><span class='tstring_end'>&quot;</span></span>
 <span class='kw'>end</span></pre>
     </td>
   </tr>
@@ -665,47 +852,39 @@ output, but I see that as the only way to make this work.</p>
       <pre class="lines">
 
 
-270
-271
-272
-273
-274
-275
-276
-277
-278
-279
-280
-281
-282
-283
-284
-285
-286
-287
-288
-289
-290
-291
-292
-293
-294
-295
-296</pre>
+1112
+1113
+1114
+1115
+1116
+1117
+1118
+1119
+1120
+1121
+1122
+1123
+1124
+1125
+1126
+1127
+1128
+1129
+1130
+1131
+1132
+1133
+1134</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'confluence_to_md.rb', line 270</span>
+      <pre class="code"><span class="info file"># File 'confluence_to_md.rb', line 1112</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_flatten_attachments'>flatten_attachments</span>
   <span class='id identifier rubyid_target'>target</span> <span class='op'>=</span> <span class='const'>File</span><span class='period'>.</span><span class='id identifier rubyid_expand_path'>expand_path</span><span class='lparen'>(</span><span class='tstring'><span class='tstring_beg'>&#39;</span><span class='tstring_content'>attachments</span><span class='tstring_end'>&#39;</span></span><span class='rparen'>)</span>
 
+  <span class='id identifier rubyid_target'>target</span> <span class='op'>=</span> <span class='const'>File</span><span class='period'>.</span><span class='id identifier rubyid_expand_path'>expand_path</span><span class='lparen'>(</span><span class='tstring'><span class='tstring_beg'>&#39;</span><span class='tstring_content'>images/attachments</span><span class='tstring_end'>&#39;</span></span><span class='rparen'>)</span> <span class='kw'>unless</span> <span class='const'>File</span><span class='period'>.</span><span class='id identifier rubyid_directory?'>directory?</span><span class='lparen'>(</span><span class='id identifier rubyid_target'>target</span><span class='rparen'>)</span>
   <span class='kw'>unless</span> <span class='const'>File</span><span class='period'>.</span><span class='id identifier rubyid_directory?'>directory?</span><span class='lparen'>(</span><span class='id identifier rubyid_target'>target</span><span class='rparen'>)</span>
-    <span class='id identifier rubyid_warn'>warn</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>Attachments directory not found </span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_target'>target</span><span class='embexpr_end'>}</span><span class='tstring_end'>&quot;</span></span>
-    <span class='id identifier rubyid_target'>target</span> <span class='op'>=</span> <span class='const'>File</span><span class='period'>.</span><span class='id identifier rubyid_expand_path'>expand_path</span><span class='lparen'>(</span><span class='tstring'><span class='tstring_beg'>&#39;</span><span class='tstring_content'>images/attachments</span><span class='tstring_end'>&#39;</span></span><span class='rparen'>)</span>
-  <span class='kw'>end</span>
-
-  <span class='kw'>unless</span> <span class='const'>File</span><span class='period'>.</span><span class='id identifier rubyid_directory?'>directory?</span><span class='lparen'>(</span><span class='id identifier rubyid_target'>target</span><span class='rparen'>)</span>
-    <span class='id identifier rubyid_warn'>warn</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>Attachments directory not found </span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_target'>target</span><span class='embexpr_end'>}</span><span class='tstring_end'>&quot;</span></span>
+    <span class='const'><span class='object_link'><a href="CLI.html" title="CLI (module)">CLI</a></span></span><span class='period'>.</span><span class='id identifier rubyid_alert'><span class='object_link'><a href="CLI.html#alert-class_method" title="CLI.alert (method)">alert</a></span></span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>Attachments directory not found </span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_target'>target</span><span class='embexpr_end'>}</span><span class='tstring_end'>&quot;</span></span>
     <span class='kw'>return</span>
   <span class='kw'>end</span>
 
@@ -716,12 +895,12 @@ output, but I see that as the only way to make this work.</p>
 
     <span class='id identifier rubyid_file'>file</span> <span class='op'>=</span> <span class='const'>File</span><span class='period'>.</span><span class='id identifier rubyid_join'>join</span><span class='lparen'>(</span><span class='id identifier rubyid_target'>target</span><span class='comma'>,</span> <span class='id identifier rubyid_file'>file</span><span class='rparen'>)</span>
 
-    <span class='id identifier rubyid_warn'>warn</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>Copying </span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_file'>file</span><span class='embexpr_end'>}</span><span class='tstring_content'> to </span><span class='embexpr_beg'>#{</span><span class='const'>File</span><span class='period'>.</span><span class='id identifier rubyid_join'>join</span><span class='lparen'>(</span><span class='tstring'><span class='tstring_beg'>&#39;</span><span class='tstring_content'>markdown/images</span><span class='tstring_end'>&#39;</span></span><span class='comma'>,</span> <span class='const'>File</span><span class='period'>.</span><span class='id identifier rubyid_basename'>basename</span><span class='lparen'>(</span><span class='id identifier rubyid_file'>file</span><span class='rparen'>)</span><span class='rparen'>)</span><span class='embexpr_end'>}</span><span class='tstring_end'>&quot;</span></span>
+    <span class='const'><span class='object_link'><a href="CLI.html" title="CLI (module)">CLI</a></span></span><span class='period'>.</span><span class='id identifier rubyid_debug'><span class='object_link'><a href="CLI.html#debug-class_method" title="CLI.debug (method)">debug</a></span></span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>Copying </span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_file'>file</span><span class='embexpr_end'>}</span><span class='tstring_content'> to </span><span class='embexpr_beg'>#{</span><span class='const'>File</span><span class='period'>.</span><span class='id identifier rubyid_join'>join</span><span class='lparen'>(</span><span class='tstring'><span class='tstring_beg'>&#39;</span><span class='tstring_content'>markdown/images</span><span class='tstring_end'>&#39;</span></span><span class='comma'>,</span> <span class='const'>File</span><span class='period'>.</span><span class='id identifier rubyid_basename'>basename</span><span class='lparen'>(</span><span class='id identifier rubyid_file'>file</span><span class='rparen'>)</span><span class='rparen'>)</span><span class='embexpr_end'>}</span><span class='tstring_end'>&quot;</span></span>
     <span class='const'>FileUtils</span><span class='period'>.</span><span class='id identifier rubyid_cp'>cp</span> <span class='id identifier rubyid_file'>file</span><span class='comma'>,</span> <span class='const'>File</span><span class='period'>.</span><span class='id identifier rubyid_join'>join</span><span class='lparen'>(</span><span class='tstring'><span class='tstring_beg'>&#39;</span><span class='tstring_content'>markdown/images</span><span class='tstring_end'>&#39;</span></span><span class='comma'>,</span> <span class='const'>File</span><span class='period'>.</span><span class='id identifier rubyid_basename'>basename</span><span class='lparen'>(</span><span class='id identifier rubyid_file'>file</span><span class='rparen'>)</span><span class='rparen'>)</span>
     <span class='id identifier rubyid_copied'>copied</span> <span class='op'>+=</span> <span class='int'>1</span>
   <span class='kw'>end</span>
 
-  <span class='id identifier rubyid_warn'>warn</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>Copied </span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_copied'>copied</span><span class='embexpr_end'>}</span><span class='tstring_content'> files from attachments to images</span><span class='tstring_end'>&quot;</span></span>
+  <span class='const'><span class='object_link'><a href="CLI.html" title="CLI (module)">CLI</a></span></span><span class='period'>.</span><span class='id identifier rubyid_info'><span class='object_link'><a href="CLI.html#info-class_method" title="CLI.info (method)">info</a></span></span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>Copied </span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_copied'>copied</span><span class='embexpr_end'>}</span><span class='tstring_content'> files from attachments to images</span><span class='tstring_end'>&quot;</span></span>
 <span class='kw'>end</span></pre>
     </td>
   </tr>
@@ -789,30 +968,48 @@ output, but I see that as the only way to make this work.</p>
       <pre class="lines">
 
 
-430
-431
-432
-433
-434
-435
-436
-437
-438
-439
-440</pre>
+1292
+1293
+1294
+1295
+1296
+1297
+1298
+1299
+1300
+1301
+1302
+1303
+1304
+1305
+1306
+1307
+1308
+1309
+1310
+1311</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'confluence_to_md.rb', line 430</span>
+      <pre class="code"><span class="info file"># File 'confluence_to_md.rb', line 1292</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_handle_stdin'>handle_stdin</span><span class='lparen'>(</span><span class='id identifier rubyid_content'>content</span><span class='rparen'>)</span>
-  <span class='id identifier rubyid_content'>content</span> <span class='op'>=</span> <span class='id identifier rubyid_content'>content</span><span class='period'>.</span><span class='id identifier rubyid_strip_meta'>strip_meta</span> <span class='kw'>if</span> <span class='ivar'>@options</span><span class='lbracket'>[</span><span class='symbol'>:strip_meta</span><span class='rbracket'>]</span>
-  <span class='id identifier rubyid_content'>content</span> <span class='op'>=</span> <span class='id identifier rubyid_content'>content</span><span class='period'>.</span><span class='id identifier rubyid_cleanup'>cleanup</span>
-  <span class='id identifier rubyid_content'>content</span> <span class='op'>=</span> <span class='id identifier rubyid_content'>content</span><span class='period'>.</span><span class='id identifier rubyid_strip_emoji'>strip_emoji</span> <span class='kw'>if</span> <span class='ivar'>@options</span><span class='lbracket'>[</span><span class='symbol'>:strip_emoji</span><span class='rbracket'>]</span>
-  <span class='id identifier rubyid_content'>content</span> <span class='op'>=</span> <span class='id identifier rubyid_content'>content</span><span class='period'>.</span><span class='id identifier rubyid_fix_headers'>fix_headers</span> <span class='kw'>if</span> <span class='ivar'>@options</span><span class='lbracket'>[</span><span class='symbol'>:fix_headers</span><span class='rbracket'>]</span>
-  <span class='id identifier rubyid_content'>content</span> <span class='op'>=</span> <span class='id identifier rubyid_content'>content</span><span class='period'>.</span><span class='id identifier rubyid_fix_hierarchy'>fix_hierarchy</span> <span class='kw'>if</span> <span class='ivar'>@options</span><span class='lbracket'>[</span><span class='symbol'>:fix_hierarchy</span><span class='rbracket'>]</span>
+  <span class='id identifier rubyid_content'>content</span><span class='period'>.</span><span class='id identifier rubyid_prepare_content!'>prepare_content!</span><span class='lparen'>(</span><span class='ivar'>@options</span><span class='rparen'>)</span>
+  <span class='id identifier rubyid_content'>content</span> <span class='op'>=</span> <span class='const'>Shellwords</span><span class='period'>.</span><span class='id identifier rubyid_escape'>escape</span><span class='lparen'>(</span><span class='id identifier rubyid_content'>content</span><span class='rparen'>)</span>
 
-  <span class='id identifier rubyid_res'>res</span> <span class='op'>=</span> <span class='backtick'>`</span><span class='tstring_content'>echo </span><span class='embexpr_beg'>#{</span><span class='const'>Shellwords</span><span class='period'>.</span><span class='id identifier rubyid_escape'>escape</span><span class='lparen'>(</span><span class='id identifier rubyid_content'>content</span><span class='rparen'>)</span><span class='embexpr_end'>}</span><span class='tstring_content'> | pandoc </span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_pandoc_options'>pandoc_options</span><span class='lparen'>(</span><span class='tstring'><span class='tstring_beg'>&#39;</span><span class='tstring_content'>--extract-media images</span><span class='tstring_end'>&#39;</span></span><span class='rparen'>)</span><span class='embexpr_end'>}</span><span class='tstring_content'> 2&gt; /dev/null</span><span class='tstring_end'>`</span></span>
+  <span class='id identifier rubyid_res'>res</span><span class='comma'>,</span> <span class='id identifier rubyid_err'>err</span><span class='comma'>,</span> <span class='id identifier rubyid_status'>status</span> <span class='op'>=</span> <span class='const'>Open3</span><span class='period'>.</span><span class='id identifier rubyid_capture3'>capture3</span><span class='lparen'>(</span><span class='tstring'><span class='tstring_beg'>%(</span><span class='tstring_content'>echo </span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_content'>content</span><span class='embexpr_end'>}</span><span class='tstring_content'> | pandoc </span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_pandoc_options'>pandoc_options</span><span class='lparen'>(</span><span class='tstring'><span class='tstring_beg'>&#39;</span><span class='tstring_content'>--extract-media images</span><span class='tstring_end'>&#39;</span></span><span class='rparen'>)</span><span class='embexpr_end'>}</span><span class='tstring_end'>)</span></span><span class='rparen'>)</span>
+  <span class='kw'>unless</span> <span class='id identifier rubyid_status'>status</span><span class='period'>.</span><span class='id identifier rubyid_success?'>success?</span>
+    <span class='const'><span class='object_link'><a href="CLI.html" title="CLI (module)">CLI</a></span></span><span class='period'>.</span><span class='id identifier rubyid_error'><span class='object_link'><a href="CLI.html#error-class_method" title="CLI.error (method)">error</a></span></span> <span class='tstring'><span class='tstring_beg'>&#39;</span><span class='tstring_content'>Failed to run pandoc on STDIN</span><span class='tstring_end'>&#39;</span></span>
+    <span class='const'><span class='object_link'><a href="CLI.html" title="CLI (module)">CLI</a></span></span><span class='period'>.</span><span class='id identifier rubyid_debug'><span class='object_link'><a href="CLI.html#debug-class_method" title="CLI.debug (method)">debug</a></span></span> <span class='id identifier rubyid_err'>err</span>
+    <span class='kw'>return</span> <span class='kw'>nil</span>
+  <span class='kw'>end</span>
+
   <span class='id identifier rubyid_res'>res</span> <span class='op'>=</span> <span class='id identifier rubyid_res'>res</span><span class='period'>.</span><span class='id identifier rubyid_fix_tables'>fix_tables</span> <span class='kw'>if</span> <span class='ivar'>@options</span><span class='lbracket'>[</span><span class='symbol'>:fix_tables</span><span class='rbracket'>]</span>
+  <span class='kw'>if</span> <span class='ivar'>@options</span><span class='lbracket'>[</span><span class='symbol'>:clean_tables</span><span class='rbracket'>]</span> <span class='op'>&amp;&amp;</span> <span class='ivar'>@options</span><span class='lbracket'>[</span><span class='symbol'>:fix_tables</span><span class='rbracket'>]</span>
+    <span class='id identifier rubyid_tc'>tc</span> <span class='op'>=</span> <span class='const'><span class='object_link'><a href="TableCleanup.html" title="TableCleanup (class)">TableCleanup</a></span></span><span class='period'>.</span><span class='id identifier rubyid_new'><span class='object_link'><a href="TableCleanup.html#initialize-instance_method" title="TableCleanup#initialize (method)">new</a></span></span><span class='lparen'>(</span><span class='id identifier rubyid_res'>res</span><span class='rparen'>)</span>
+    <span class='id identifier rubyid_tc'>tc</span><span class='period'>.</span><span class='id identifier rubyid_max_cell_width'>max_cell_width</span> <span class='op'>=</span> <span class='ivar'>@options</span><span class='lbracket'>[</span><span class='symbol'>:max_cell_width</span><span class='rbracket'>]</span> <span class='kw'>if</span> <span class='ivar'>@options</span><span class='lbracket'>[</span><span class='symbol'>:max_cell_width</span><span class='rbracket'>]</span>
+    <span class='id identifier rubyid_tc'>tc</span><span class='period'>.</span><span class='id identifier rubyid_max_table_width'>max_table_width</span> <span class='op'>=</span> <span class='ivar'>@options</span><span class='lbracket'>[</span><span class='symbol'>:max_table_width</span><span class='rbracket'>]</span> <span class='kw'>if</span> <span class='ivar'>@options</span><span class='lbracket'>[</span><span class='symbol'>:max_table_width</span><span class='rbracket'>]</span>
+    <span class='id identifier rubyid_res'>res</span> <span class='op'>=</span> <span class='id identifier rubyid_tc'>tc</span><span class='period'>.</span><span class='id identifier rubyid_clean'>clean</span>
+  <span class='kw'>end</span>
   <span class='id identifier rubyid_res'>res</span><span class='period'>.</span><span class='id identifier rubyid_relative_paths'>relative_paths</span><span class='period'>.</span><span class='id identifier rubyid_strip_comments'>strip_comments</span>
 <span class='kw'>end</span></pre>
     </td>
@@ -882,17 +1079,17 @@ options</p>
       <pre class="lines">
 
 
-238
-239
-240
-241
-242
-243
-244
-245</pre>
+1084
+1085
+1086
+1087
+1088
+1089
+1090
+1091</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'confluence_to_md.rb', line 238</span>
+      <pre class="code"><span class="info file"># File 'confluence_to_md.rb', line 1084</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_pandoc_options'>pandoc_options</span><span class='lparen'>(</span><span class='id identifier rubyid_additional'>additional</span><span class='rparen'>)</span>
   <span class='id identifier rubyid_additional'>additional</span> <span class='op'>=</span> <span class='lbracket'>[</span><span class='id identifier rubyid_additional'>additional</span><span class='rbracket'>]</span> <span class='kw'>if</span> <span class='id identifier rubyid_additional'>additional</span><span class='period'>.</span><span class='id identifier rubyid_is_a?'>is_a?</span><span class='lparen'>(</span><span class='const'><span class='object_link'><a href="String.html" title="String (class)">String</a></span></span><span class='rparen'>)</span>
@@ -952,37 +1149,41 @@ Markdown result as string for output to STDOUT.</p>
       <pre class="lines">
 
 
-394
-395
-396
-397
-398
-399
-400
-401
-402
-403
-404
-405
-406
-407
-408
-409
-410
-411
-412
-413
-414
-415
-416
-417
-418
-419
-420
-421</pre>
+1252
+1253
+1254
+1255
+1256
+1257
+1258
+1259
+1260
+1261
+1262
+1263
+1264
+1265
+1266
+1267
+1268
+1269
+1270
+1271
+1272
+1273
+1274
+1275
+1276
+1277
+1278
+1279
+1280
+1281
+1282
+1283</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'confluence_to_md.rb', line 394</span>
+      <pre class="code"><span class="info file"># File 'confluence_to_md.rb', line 1252</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_single_file'>single_file</span><span class='lparen'>(</span><span class='id identifier rubyid_html'>html</span><span class='rparen'>)</span>
   <span class='id identifier rubyid_content'>content</span> <span class='op'>=</span> <span class='const'>IO</span><span class='period'>.</span><span class='id identifier rubyid_read'>read</span><span class='lparen'>(</span><span class='id identifier rubyid_html'>html</span><span class='rparen'>)</span>
@@ -991,26 +1192,30 @@ Markdown result as string for output to STDOUT.</p>
                <span class='id identifier rubyid_title'>title</span> <span class='op'>=</span> <span class='id identifier rubyid_content'>content</span><span class='period'>.</span><span class='id identifier rubyid_match'>match</span><span class='lparen'>(</span><span class='tstring'><span class='regexp_beg'>%r{</span><span class='tstring_content'>&lt;title&gt;(.*?)&lt;/title&gt;</span><span class='regexp_end'>}m</span></span><span class='rparen'>)</span><span class='lbracket'>[</span><span class='int'>1</span><span class='rbracket'>]</span>
                               <span class='period'>.</span><span class='id identifier rubyid_sub'>sub</span><span class='lparen'>(</span><span class='tstring'><span class='regexp_beg'>/</span><span class='tstring_content'>^.*? : </span><span class='regexp_end'>/</span></span><span class='comma'>,</span> <span class='tstring'><span class='tstring_beg'>&#39;</span><span class='tstring_end'>&#39;</span></span><span class='rparen'>)</span><span class='period'>.</span><span class='id identifier rubyid_sub'>sub</span><span class='lparen'>(</span><span class='tstring'><span class='regexp_beg'>/</span><span class='tstring_content'>👓</span><span class='regexp_end'>/</span></span><span class='comma'>,</span> <span class='tstring'><span class='tstring_beg'>&#39;</span><span class='tstring_end'>&#39;</span></span><span class='rparen'>)</span><span class='period'>.</span><span class='id identifier rubyid_sub'>sub</span><span class='lparen'>(</span><span class='tstring'><span class='regexp_beg'>/</span><span class='tstring_content'>copy of </span><span class='regexp_end'>/i</span></span><span class='comma'>,</span> <span class='tstring'><span class='tstring_beg'>&#39;</span><span class='tstring_end'>&#39;</span></span><span class='rparen'>)</span>
                <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_title'>title</span><span class='period'>.</span><span class='id identifier rubyid_slugify'>slugify</span><span class='embexpr_end'>}</span><span class='tstring_content'>.md</span><span class='tstring_end'>&quot;</span></span>
-             <span class='kw'>else</span>
-               <span class='kw'>nil</span>
              <span class='kw'>end</span>
 
-  <span class='id identifier rubyid_content'>content</span> <span class='op'>=</span> <span class='id identifier rubyid_content'>content</span><span class='period'>.</span><span class='id identifier rubyid_strip_meta'>strip_meta</span> <span class='kw'>if</span> <span class='ivar'>@options</span><span class='lbracket'>[</span><span class='symbol'>:strip_meta</span><span class='rbracket'>]</span>
-  <span class='id identifier rubyid_content'>content</span> <span class='op'>=</span> <span class='id identifier rubyid_content'>content</span><span class='period'>.</span><span class='id identifier rubyid_cleanup'>cleanup</span>
-  <span class='id identifier rubyid_content'>content</span> <span class='op'>=</span> <span class='id identifier rubyid_content'>content</span><span class='period'>.</span><span class='id identifier rubyid_strip_emoji'>strip_emoji</span> <span class='kw'>if</span> <span class='ivar'>@options</span><span class='lbracket'>[</span><span class='symbol'>:strip_emoji</span><span class='rbracket'>]</span>
-  <span class='id identifier rubyid_content'>content</span> <span class='op'>=</span> <span class='id identifier rubyid_content'>content</span><span class='period'>.</span><span class='id identifier rubyid_fix_headers'>fix_headers</span> <span class='kw'>if</span> <span class='ivar'>@options</span><span class='lbracket'>[</span><span class='symbol'>:fix_headers</span><span class='rbracket'>]</span>
-  <span class='id identifier rubyid_content'>content</span> <span class='op'>=</span> <span class='id identifier rubyid_content'>content</span><span class='period'>.</span><span class='id identifier rubyid_fix_hierarchy'>fix_hierarchy</span> <span class='kw'>if</span> <span class='ivar'>@options</span><span class='lbracket'>[</span><span class='symbol'>:fix_hierarchy</span><span class='rbracket'>]</span>
+  <span class='id identifier rubyid_content'>content</span><span class='period'>.</span><span class='id identifier rubyid_prepare_content!'>prepare_content!</span><span class='lparen'>(</span><span class='ivar'>@options</span><span class='rparen'>)</span>
 
-  <span class='id identifier rubyid_res'>res</span> <span class='op'>=</span> <span class='backtick'>`</span><span class='tstring_content'>echo </span><span class='embexpr_beg'>#{</span><span class='const'>Shellwords</span><span class='period'>.</span><span class='id identifier rubyid_escape'>escape</span><span class='lparen'>(</span><span class='id identifier rubyid_content'>content</span><span class='rparen'>)</span><span class='embexpr_end'>}</span><span class='tstring_content'> | pandoc </span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_pandoc_options'>pandoc_options</span><span class='lparen'>(</span><span class='tstring'><span class='tstring_beg'>&#39;</span><span class='tstring_content'>--extract-media images</span><span class='tstring_end'>&#39;</span></span><span class='rparen'>)</span><span class='embexpr_end'>}</span><span class='tstring_content'> 2&gt; /dev/null</span><span class='tstring_end'>`</span></span>
+  <span class='id identifier rubyid_res'>res</span><span class='comma'>,</span> <span class='id identifier rubyid_err'>err</span><span class='comma'>,</span> <span class='id identifier rubyid_status'>status</span> <span class='op'>=</span> <span class='const'>Open3</span><span class='period'>.</span><span class='id identifier rubyid_capture3'>capture3</span><span class='lparen'>(</span><span class='tstring'><span class='tstring_beg'>%(</span><span class='tstring_content'>echo </span><span class='embexpr_beg'>#{</span><span class='const'>Shellwords</span><span class='period'>.</span><span class='id identifier rubyid_escape'>escape</span><span class='lparen'>(</span><span class='id identifier rubyid_content'>content</span><span class='rparen'>)</span><span class='embexpr_end'>}</span><span class='tstring_content'> | pandoc </span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_pandoc_options'>pandoc_options</span><span class='lparen'>(</span><span class='tstring'><span class='tstring_beg'>&#39;</span><span class='tstring_content'>--extract-media images</span><span class='tstring_end'>&#39;</span></span><span class='rparen'>)</span><span class='embexpr_end'>}</span><span class='tstring_end'>)</span></span><span class='rparen'>)</span>
+  <span class='kw'>unless</span> <span class='id identifier rubyid_status'>status</span><span class='period'>.</span><span class='id identifier rubyid_success?'>success?</span>
+    <span class='const'><span class='object_link'><a href="CLI.html" title="CLI (module)">CLI</a></span></span><span class='period'>.</span><span class='id identifier rubyid_error'><span class='object_link'><a href="CLI.html#error-class_method" title="CLI.error (method)">error</a></span></span><span class='lparen'>(</span><span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>Failed to run pandoc on </span><span class='embexpr_beg'>#{</span><span class='const'>File</span><span class='period'>.</span><span class='id identifier rubyid_basename'>basename</span><span class='lparen'>(</span><span class='id identifier rubyid_stripped'>stripped</span><span class='rparen'>)</span><span class='embexpr_end'>}</span><span class='tstring_end'>&quot;</span></span><span class='rparen'>)</span>
+    <span class='const'><span class='object_link'><a href="CLI.html" title="CLI (module)">CLI</a></span></span><span class='period'>.</span><span class='id identifier rubyid_debug'><span class='object_link'><a href="CLI.html#debug-class_method" title="CLI.debug (method)">debug</a></span></span> <span class='id identifier rubyid_err'>err</span>
+    <span class='kw'>return</span> <span class='kw'>nil</span>
+  <span class='kw'>end</span>
+
   <span class='id identifier rubyid_res'>res</span> <span class='op'>=</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_res'>res</span><span class='embexpr_end'>}</span><span class='tstring_content'>\n\n&lt;!--Source: </span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_html'>html</span><span class='embexpr_end'>}</span><span class='tstring_content'>--&gt;\n</span><span class='tstring_end'>&quot;</span></span> <span class='kw'>if</span> <span class='ivar'>@options</span><span class='lbracket'>[</span><span class='symbol'>:include_source</span><span class='rbracket'>]</span>
   <span class='id identifier rubyid_res'>res</span> <span class='op'>=</span> <span class='id identifier rubyid_res'>res</span><span class='period'>.</span><span class='id identifier rubyid_fix_tables'>fix_tables</span> <span class='kw'>if</span> <span class='ivar'>@options</span><span class='lbracket'>[</span><span class='symbol'>:fix_tables</span><span class='rbracket'>]</span>
-  <span class='kw'>if</span> <span class='id identifier rubyid_markdown'>markdown</span>
-    <span class='id identifier rubyid_warn'>warn</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_html'>html</span><span class='embexpr_end'>}</span><span class='tstring_content'> =&gt; </span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_markdown'>markdown</span><span class='embexpr_end'>}</span><span class='tstring_end'>&quot;</span></span>
-    <span class='const'>File</span><span class='period'>.</span><span class='id identifier rubyid_open'>open</span><span class='lparen'>(</span><span class='id identifier rubyid_markdown'>markdown</span><span class='comma'>,</span> <span class='tstring'><span class='tstring_beg'>&#39;</span><span class='tstring_content'>w</span><span class='tstring_end'>&#39;</span></span><span class='rparen'>)</span> <span class='lbrace'>{</span> <span class='op'>|</span><span class='id identifier rubyid_f'>f</span><span class='op'>|</span> <span class='id identifier rubyid_f'>f</span><span class='period'>.</span><span class='id identifier rubyid_puts'>puts</span> <span class='id identifier rubyid_res'>res</span><span class='period'>.</span><span class='id identifier rubyid_relative_paths'>relative_paths</span><span class='period'>.</span><span class='id identifier rubyid_strip_comments'>strip_comments</span> <span class='rbrace'>}</span>
-    <span class='kw'>return</span> <span class='kw'>nil</span>
-  <span class='kw'>else</span>
-    <span class='kw'>return</span> <span class='id identifier rubyid_res'>res</span><span class='period'>.</span><span class='id identifier rubyid_relative_paths'>relative_paths</span><span class='period'>.</span><span class='id identifier rubyid_strip_comments'>strip_comments</span>
+  <span class='kw'>if</span> <span class='ivar'>@options</span><span class='lbracket'>[</span><span class='symbol'>:clean_tables</span><span class='rbracket'>]</span> <span class='op'>&amp;&amp;</span> <span class='ivar'>@options</span><span class='lbracket'>[</span><span class='symbol'>:fix_tables</span><span class='rbracket'>]</span>
+    <span class='id identifier rubyid_tc'>tc</span> <span class='op'>=</span> <span class='const'><span class='object_link'><a href="TableCleanup.html" title="TableCleanup (class)">TableCleanup</a></span></span><span class='period'>.</span><span class='id identifier rubyid_new'><span class='object_link'><a href="TableCleanup.html#initialize-instance_method" title="TableCleanup#initialize (method)">new</a></span></span><span class='lparen'>(</span><span class='id identifier rubyid_res'>res</span><span class='rparen'>)</span>
+    <span class='id identifier rubyid_tc'>tc</span><span class='period'>.</span><span class='id identifier rubyid_max_cell_width'>max_cell_width</span> <span class='op'>=</span> <span class='ivar'>@options</span><span class='lbracket'>[</span><span class='symbol'>:max_cell_width</span><span class='rbracket'>]</span> <span class='kw'>if</span> <span class='ivar'>@options</span><span class='lbracket'>[</span><span class='symbol'>:max_cell_width</span><span class='rbracket'>]</span>
+    <span class='id identifier rubyid_tc'>tc</span><span class='period'>.</span><span class='id identifier rubyid_max_table_width'>max_table_width</span> <span class='op'>=</span> <span class='ivar'>@options</span><span class='lbracket'>[</span><span class='symbol'>:max_table_width</span><span class='rbracket'>]</span> <span class='kw'>if</span> <span class='ivar'>@options</span><span class='lbracket'>[</span><span class='symbol'>:max_table_width</span><span class='rbracket'>]</span>
+    <span class='id identifier rubyid_res'>res</span> <span class='op'>=</span> <span class='id identifier rubyid_tc'>tc</span><span class='period'>.</span><span class='id identifier rubyid_clean'>clean</span>
   <span class='kw'>end</span>
+  <span class='kw'>return</span> <span class='id identifier rubyid_res'>res</span><span class='period'>.</span><span class='id identifier rubyid_relative_paths'>relative_paths</span><span class='period'>.</span><span class='id identifier rubyid_strip_comments'>strip_comments</span> <span class='kw'>unless</span> <span class='id identifier rubyid_markdown'>markdown</span>
+
+  <span class='const'><span class='object_link'><a href="CLI.html" title="CLI (module)">CLI</a></span></span><span class='period'>.</span><span class='id identifier rubyid_info'><span class='object_link'><a href="CLI.html#info-class_method" title="CLI.info (method)">info</a></span></span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_html'>html</span><span class='period'>.</span><span class='id identifier rubyid_trunc_middle'>trunc_middle</span><span class='lparen'>(</span><span class='int'>60</span><span class='rparen'>)</span><span class='embexpr_end'>}</span><span class='tstring_content'> =&gt; </span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_markdown'>markdown</span><span class='embexpr_end'>}</span><span class='tstring_end'>&quot;</span></span>
+  <span class='const'>File</span><span class='period'>.</span><span class='id identifier rubyid_open'>open</span><span class='lparen'>(</span><span class='id identifier rubyid_markdown'>markdown</span><span class='comma'>,</span> <span class='tstring'><span class='tstring_beg'>&#39;</span><span class='tstring_content'>w</span><span class='tstring_end'>&#39;</span></span><span class='rparen'>)</span> <span class='lbrace'>{</span> <span class='op'>|</span><span class='id identifier rubyid_f'>f</span><span class='op'>|</span> <span class='id identifier rubyid_f'>f</span><span class='period'>.</span><span class='id identifier rubyid_puts'>puts</span> <span class='id identifier rubyid_res'>res</span><span class='period'>.</span><span class='id identifier rubyid_relative_paths'>relative_paths</span><span class='period'>.</span><span class='id identifier rubyid_strip_comments'>strip_comments</span> <span class='rbrace'>}</span>
+  <span class='kw'>nil</span>
 <span class='kw'>end</span></pre>
     </td>
   </tr>
@@ -1061,20 +1266,20 @@ Markdown result as string for output to STDOUT.</p>
       <pre class="lines">
 
 
-376
-377
-378
-379
-380
-381
-382
-383
-384
-385
-386</pre>
+1232
+1233
+1234
+1235
+1236
+1237
+1238
+1239
+1240
+1241
+1242</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'confluence_to_md.rb', line 376</span>
+      <pre class="code"><span class="info file"># File 'confluence_to_md.rb', line 1232</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_update_links'>update_links</span><span class='lparen'>(</span><span class='id identifier rubyid_index_h'>index_h</span><span class='rparen'>)</span>
   <span class='const'>Dir</span><span class='period'>.</span><span class='id identifier rubyid_chdir'>chdir</span><span class='lparen'>(</span><span class='tstring'><span class='tstring_beg'>&#39;</span><span class='tstring_content'>markdown</span><span class='tstring_end'>&#39;</span></span><span class='rparen'>)</span>
@@ -1092,81 +1297,12 @@ Markdown result as string for output to STDOUT.</p>
 </table>
 </div>
     
-      <div class="method_details ">
-  <h3 class="signature " id="version-instance_method">
-  
-    #<strong>version</strong>  &#x21d2; <tt><span class='object_link'><a href="String.html" title="String (class)">String</a></span></tt> 
-  
-
-  
-
-  
-</h3><div class="docstring">
-  <div class="discussion">
-    <p>Return script version (requires it be run from within repository where VERSION file exists)</p>
-
-
-  </div>
-</div>
-<div class="tags">
-  
-<p class="tag_title">Returns:</p>
-<ul class="return">
-  
-    <li>
-      
-      
-        <span class='type'>(<tt><span class='object_link'><a href="String.html" title="String (class)">String</a></span></tt>)</span>
-      
-      
-      
-        &mdash;
-        <div class='inline'><p>version string</p>
-</div>
-      
-    </li>
-  
-</ul>
-
-</div><table class="source_code">
-  <tr>
-    <td>
-      <pre class="lines">
-
-
-761
-762
-763
-764
-765
-766
-767
-768
-769</pre>
-    </td>
-    <td>
-      <pre class="code"><span class="info file"># File 'confluence_to_md.rb', line 761</span>
-
-<span class='kw'>def</span> <span class='id identifier rubyid_version'>version</span>
-  <span class='id identifier rubyid_version_file'>version_file</span> <span class='op'>=</span> <span class='const'>File</span><span class='period'>.</span><span class='id identifier rubyid_join'>join</span><span class='lparen'>(</span><span class='const'>File</span><span class='period'>.</span><span class='id identifier rubyid_dirname'>dirname</span><span class='lparen'>(</span><span class='const'>File</span><span class='period'>.</span><span class='id identifier rubyid_realdirpath'>realdirpath</span><span class='lparen'>(</span><span class='kw'>__FILE__</span><span class='rparen'>)</span><span class='rparen'>)</span><span class='comma'>,</span> <span class='tstring'><span class='tstring_beg'>&#39;</span><span class='tstring_content'>VERSION</span><span class='tstring_end'>&#39;</span></span><span class='rparen'>)</span>
-  <span class='kw'>if</span> <span class='const'>File</span><span class='period'>.</span><span class='id identifier rubyid_exist?'>exist?</span><span class='lparen'>(</span><span class='id identifier rubyid_version_file'>version_file</span><span class='rparen'>)</span>
-    <span class='id identifier rubyid_version'>version</span> <span class='op'>=</span> <span class='const'>IO</span><span class='period'>.</span><span class='id identifier rubyid_read'>read</span><span class='lparen'>(</span><span class='id identifier rubyid_version_file'>version_file</span><span class='rparen'>)</span><span class='period'>.</span><span class='id identifier rubyid_strip'>strip</span>
-    <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>v</span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_version'>version</span><span class='embexpr_end'>}</span><span class='tstring_end'>&quot;</span></span>
-  <span class='kw'>else</span>
-    <span class='tstring'><span class='tstring_beg'>&#39;</span><span class='tstring_content'>(version unavailable)</span><span class='tstring_end'>&#39;</span></span>
-  <span class='kw'>end</span>
-<span class='kw'>end</span></pre>
-    </td>
-  </tr>
-</table>
-</div>
-    
   </div>
 
 </div>
 
       <div id="footer">
-  Generated on Thu Aug 15 06:43:09 2024 by
+  Generated on Fri Aug 16 09:06:04 2024 by
   <a href="https://yardoc.org" title="Yay! A Ruby Documentation Tool" target="_parent">yard</a>
   0.9.36 (ruby-3.0.1).
 </div>

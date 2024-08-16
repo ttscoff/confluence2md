@@ -4,18 +4,59 @@ require 'rdoc/task'
 require 'yard'
 
 YARD::Rake::YardocTask.new do |t|
- t.files = ['*.rb']
- t.options = ['--markup-provider=redcarpet', '--markup=markdown', '--no-private', '-p', 'yard_templates']
- # t.stats_options = ['--list-undoc']
+  t.files = ['**/*.rb']
+  t.options = ['--markup-provider=redcarpet', '--markup=markdown', '--no-private']
+  t.stats_options = ['--list-undoc']
 end
 
 task :doc, [*Rake.application[:yard].arg_names] => [:yard]
 
 Rake::RDocTask.new do |rd|
   rd.main = 'README.md'
-  rd.rdoc_files.include('README.md', '*.rb')
+  rd.rdoc_files.include('README.md', '**/*.rb')
   rd.title = 'confluence2md'
   rd.markup = 'markdown'
+end
+
+desc 'Merge required files into single script'
+task :merge do
+  puts BuildScript.merge
+end
+
+class BuildScript
+  # String helpers
+  class ::String
+    def import_markers(base)
+      gsub(/^# *merge\nrequire(?:_relative)? '(.*?)'\n/) do
+        file = Regexp.last_match(1)
+        file = File.join(base, "#{file}.rb")
+
+        content = IO.read(file).sub(/^# frozen_string_literal: true\n+/, '')
+        content.import_markers(File.dirname(file))
+      end
+    end
+
+    def import_markers!(base)
+      replace import_markers(base)
+    end
+  end
+
+  class << self
+    def compile
+      source_file = File.expand_path('confluence_to_md_test.rb')
+      source = IO.read(source_file).strip
+
+      source.import_markers(File.dirname(source_file))
+    end
+
+    def merge
+      script = compile
+      target = "confluence_to_md.rb"
+
+      File.open(target, 'w') { |f| f.puts script }
+      "Updated script"
+    end
+  end
 end
 
 desc 'Bump incremental version number'
