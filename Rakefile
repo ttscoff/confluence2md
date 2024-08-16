@@ -60,10 +60,18 @@ class BuildScript
   end
 end
 
+desc 'Get current version'
+task :ver do
+  version_file = 'lib/confluence2md/version.rb'
+  content = IO.read(version_file)
+  version = content.match(/(?<=VERSION = ')(\d+\.\d+\.\d+\S*)(?=')/)[1]
+  puts version
+end
+
 desc 'Bump incremental version number'
 task :bump, :type do |_, args|
   args.with_defaults(type: 'inc')
-  version_file = 'lib/version.rb'
+  version_file = 'lib/confluence2md/version.rb'
   content = IO.read(version_file)
   content.sub!(/(?<=VERSION = ')(?<major>\d+)\.(?<minor>\d+)\.(?<inc>\d+)(?<pre>\S+)?(?=')/) do
     m = Regexp.last_match

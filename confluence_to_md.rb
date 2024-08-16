@@ -709,7 +709,11 @@ class TableCleanup
 
     table.each do |row|
       row.each_with_index do |cell, col|
-        @widths[col] = cell.size if @widths[col] < cell.size
+        if @widths[col]
+          @widths[col] = cell.size if @widths[col] < cell.size
+        else
+          @widths[col] = cell.size
+        end
       end
     end
 
@@ -759,8 +763,12 @@ class TableCleanup
     @string << '|'
     row.zip(@widths).each do |cell, width|
       width = @max_cell_width - 2 if width >= @max_cell_width
-      content = @alignment ? align(@alignment[idx], cell, width) : cell.ljust(width, ' ')
-      @string << " #{content} |"
+      if width.zero?
+        @string << '|'
+      else
+        content = @alignment ? align(@alignment[idx], cell, width) : cell.ljust(width, ' ')
+        @string << " #{content} |"
+      end
       idx += 1
     end
     @string << "\n"
@@ -804,14 +812,21 @@ class TableCleanup
   ##
   def clean
     table_rx = /^(?ix)(?<table>
-    (?<header>\|?(?:.+?\|)+.*?)\s*\n
+    (?<header>\|?(?:.*?\|)+.*?)\s*\n
     (?<align>\|?(?:[:-]+\|)+[:-]*)\s*\n
-    (?<rows>(?:\|?(?:.+?\|)+.*?(?:\n|\Z))+))/
+    (?<rows>(?:\|?(?:.*?\|)+.*?(?:\n|\Z))+))/
+
+    @content.gsub!(/(\|?(?:.+?\|)+)\n\|\n/) do
+      m = Regexp.last_match
+      cells = parse_cells(m[1]).count
+      "#{m[1]}\n#{'|' * cells}\n"
+    end
 
     tables = @content.to_enum(:scan, table_rx).map { Regexp.last_match }
 
-    table = []
     tables.each do |t|
+      table = []
+
       @alignment = parse_cells(t['align'].ensure_pipes).map do |cell|
         if cell[0, 1] == ':' && cell[-1, 1] == ':'
           :center
@@ -836,6 +851,7 @@ class TableCleanup
 
       @content.sub!(/#{Regexp.escape(t['table'])}/, "#{build_table(table)}\n")
     end
+
     @content
   end
 end

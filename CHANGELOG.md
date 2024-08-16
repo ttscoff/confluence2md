@@ -1,3 +1,16 @@
+### 1.0.25
+
+2024-08-16 14:22
+
+#### NEW
+
+- Tablecleaner.rb script for cleaning individual markdown files containing tables.
+
+#### IMPROVED
+
+- Refactoring for manageability
+- Better table cleanup
+
 confluence2md 1.0.24
 -------------------------
 

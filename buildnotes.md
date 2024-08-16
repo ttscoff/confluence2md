@@ -33,7 +33,7 @@ All version bumping and changelog updating handled by script below. Steps are ba
 
 rake merge
 rake bump
-set VER (command cat VERSION)
+set VER (rake ver)
 
 changelog -u
 git ar
