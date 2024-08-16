@@ -16,22 +16,22 @@ rescue LoadError
 end
 
 # merge
-require_relative '../lib/version'
+require_relative '../lib/confluence2md/version'
 
 # merge
-require_relative '../lib/tty'
+require_relative '../lib/confluence2md/tty'
 
 # merge
-require_relative '../lib/cli'
+require_relative '../lib/confluence2md/cli'
 
 # merge
-require_relative '../lib/table'
+require_relative '../lib/confluence2md/table'
 
 # merge
-require_relative '../lib/html2markdown'
+require_relative '../lib/confluence2md/html2markdown'
 
 # merge
-require_relative '../lib/confluence2markdown'
+require_relative '../lib/confluence2md/confluence2markdown'
 
 options = {
   clean_dirs: false,

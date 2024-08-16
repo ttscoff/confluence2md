@@ -4,10 +4,10 @@
 require 'optparse'
 
 # merge
-require_relative '../lib/table'
+require_relative '../lib/confluence2md/table'
 
 # merge
-require_relative '../lib/version'
+require_relative '../lib/confluence2md/version'
 
 options = {
   # debug: false,
