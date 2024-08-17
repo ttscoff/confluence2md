@@ -59,4 +59,4 @@ Keep README.md up-to-date with changes to functionality and new command line swi
 
 Use YARD commenting in script and run Yard to update docs.
 
-@run(yard)
+@run(rake yard)

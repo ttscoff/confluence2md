@@ -24,6 +24,8 @@ task :merge do
   BuildScript.merge('src/tablecleaner.rb', 'tablecleaner.rb')
 end
 
+task :compile => [:merge]
+
 class BuildScript
   # String helpers
   class ::String
