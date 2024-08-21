@@ -3,6 +3,8 @@
 ##
 ## Class for converting HTML to Markdown using Nokogiri
 ##
+## @api public
+##
 class HTML2Markdown
   def initialize(str, baseurl = nil)
     begin
@@ -125,14 +127,14 @@ class HTML2Markdown
       o
     when 'ul'
       "\n\n" + node.children.map do |el|
-        next if el.name == 'text'
+        next if el.name == 'text' || el.text.strip.empty?
 
-        "* #{output_for_children(el).gsub(/^(\t)|(    )/, "\t\t").gsub(/^>/, "\t>")}\n"
+        "- #{output_for_children(el).gsub(/^(\t)|(    )/, "\t\t").gsub(/^>/, "\t>")}\n"
       end.join + "\n\n"
     when 'ol'
       i = 0
       "\n\n" + node.children.map { |el|
-        next if el.name == 'text'
+        next if el.name == 'text' || el.text.strip.empty?
 
         i += 1
         "#{i}. #{output_for_children(el).gsub(/^(\t)|(    )/, "\t\t").gsub(/^>/, "\t>")}\n"
@@ -163,6 +165,9 @@ class HTML2Markdown
     when 'b', 'strong'
       "**#{node.text.sub(/(\s*)?$/, '**\1')}"
     # Tables are not part of Markdown, so we output WikiCreole
+    when 'table'
+      @first_row = true
+      output_for_children(node)
     when 'tr'
       ths = node.children.select { |c| c.name == 'th' }
       tds = node.children.select { |c| c.name == 'td' }
@@ -173,14 +178,19 @@ class HTML2Markdown
         align = node.children.select { |c| c.name == 'th' }
                     .map { ':---|' }
                     .join
-        "#{output}\n|#{align}"
+        output = "#{output}\n|#{align}"
       else
-        node.children.select { |c| c.name == 'th' || c.name == 'td' }
-            .map { |c| output_for(c) }
-            .join.gsub(/\|\|/, '|')
+        els = node.children.select { |c| c.name == 'th' || c.name == 'td' }
+        output = els.map { |cell| output_for(cell) }.join.gsub(/\|\|/, '|')
       end
+      @first_row = false
+      output
     when 'th', 'td'
-      "|#{clean_cell(output_for_children(node).strip)}|"
+      if node.name == 'th' && !@first_row
+        "|**#{clean_cell(output_for_children(node).strip)}**|"
+      else
+        "|#{clean_cell(output_for_children(node).strip)}|"
+      end
     when 'text'
       # Sometimes Nokogiri lies. Force the encoding back to what we know it is
       if (c = node.content.force_encoding(@encoding)) =~ /\S/
@@ -205,7 +215,8 @@ class HTML2Markdown
   def clean_cell(content)
     content.gsub!(%r{</?p>}, '')
     content.gsub!(%r{<li>(.*?)</li>}m, "- \\1\n")
-    content.gsub(%r{<(\w+)(?: .*?)?>(.*?)</\1>}m, '\2')
+    content.gsub!(%r{<(\w+)(?: .*?)?>(.*?)</\1>}m, '\2')
+    content.gsub!(%r{\n-\s*\n}m, '')
     content.gsub(/\n+/, '<br/>')
   end
 end

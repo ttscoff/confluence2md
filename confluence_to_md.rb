@@ -15,7 +15,15 @@ begin
 rescue LoadError
 end
 
+##
+## C2MD module
+##
+## @api public
+##
 module C2MD
+  ##
+  ## Version
+  ##
   VERSION = '1.0.25'
 end
 
@@ -519,6 +527,7 @@ end
 ##
 module CLI
   # String helpers
+  # @api public
   class ::String
     ##
     ## Truncate a string at the end, accounting for message prefix
@@ -666,6 +675,7 @@ module CLI
 end
 
 # Table formatting, cleans up tables in content
+# @api public
 class TableCleanup
   # Max cell width for formatting, defaults to 30
   attr_writer :max_cell_width
@@ -813,7 +823,7 @@ class TableCleanup
   def clean
     table_rx = /^(?ix)(?<table>
     (?<header>\|?(?:.*?\|)+.*?)\s*\n
-    (?<align>\|?(?:[:-]+\|)+[:-]*)\s*\n
+    ((?<align>\|?(?:[:-]+\|)+[:-]*)\s*\n)?
     (?<rows>(?:\|?(?:.*?\|)+.*?(?:\n|\Z))+))/
 
     @content.gsub!(/(\|?(?:.+?\|)+)\n\|\n/) do
@@ -827,7 +837,14 @@ class TableCleanup
     tables.each do |t|
       table = []
 
-      @alignment = parse_cells(t['align'].ensure_pipes).map do |cell|
+      if t['align'].nil?
+        cells = parse_cells(t['header'])
+        align = "|#{([':---'] * cells.count).join('|')}|"
+      else
+        align = t['align']
+      end
+
+      @alignment = parse_cells(align.ensure_pipes).map do |cell|
         if cell[0, 1] == ':' && cell[-1, 1] == ':'
           :center
         elsif cell[-1, 1] == ':'
@@ -858,6 +875,8 @@ end
 
 ##
 ## Class for converting HTML to Markdown using Nokogiri
+##
+## @api public
 ##
 class HTML2Markdown
   def initialize(str, baseurl = nil)
@@ -981,14 +1000,14 @@ class HTML2Markdown
       o
     when 'ul'
       "\n\n" + node.children.map do |el|
-        next if el.name == 'text'
+        next if el.name == 'text' || el.text.strip.empty?
 
-        "* #{output_for_children(el).gsub(/^(\t)|(    )/, "\t\t").gsub(/^>/, "\t>")}\n"
+        "- #{output_for_children(el).gsub(/^(\t)|(    )/, "\t\t").gsub(/^>/, "\t>")}\n"
       end.join + "\n\n"
     when 'ol'
       i = 0
       "\n\n" + node.children.map { |el|
-        next if el.name == 'text'
+        next if el.name == 'text' || el.text.strip.empty?
 
         i += 1
         "#{i}. #{output_for_children(el).gsub(/^(\t)|(    )/, "\t\t").gsub(/^>/, "\t>")}\n"
@@ -1019,6 +1038,9 @@ class HTML2Markdown
     when 'b', 'strong'
       "**#{node.text.sub(/(\s*)?$/, '**\1')}"
     # Tables are not part of Markdown, so we output WikiCreole
+    when 'table'
+      @first_row = true
+      output_for_children(node)
     when 'tr'
       ths = node.children.select { |c| c.name == 'th' }
       tds = node.children.select { |c| c.name == 'td' }
@@ -1029,14 +1051,19 @@ class HTML2Markdown
         align = node.children.select { |c| c.name == 'th' }
                     .map { ':---|' }
                     .join
-        "#{output}\n|#{align}"
+        output = "#{output}\n|#{align}"
       else
-        node.children.select { |c| c.name == 'th' || c.name == 'td' }
-            .map { |c| output_for(c) }
-            .join.gsub(/\|\|/, '|')
+        els = node.children.select { |c| c.name == 'th' || c.name == 'td' }
+        output = els.map { |cell| output_for(cell) }.join.gsub(/\|\|/, '|')
       end
+      @first_row = false
+      output
     when 'th', 'td'
-      "|#{clean_cell(output_for_children(node).strip)}|"
+      if node.name == 'th' && !@first_row
+        "|**#{clean_cell(output_for_children(node).strip)}**|"
+      else
+        "|#{clean_cell(output_for_children(node).strip)}|"
+      end
     when 'text'
       # Sometimes Nokogiri lies. Force the encoding back to what we know it is
       if (c = node.content.force_encoding(@encoding)) =~ /\S/
@@ -1061,12 +1088,14 @@ class HTML2Markdown
   def clean_cell(content)
     content.gsub!(%r{</?p>}, '')
     content.gsub!(%r{<li>(.*?)</li>}m, "- \\1\n")
-    content.gsub(%r{<(\w+)(?: .*?)?>(.*?)</\1>}m, '\2')
+    content.gsub!(%r{<(\w+)(?: .*?)?>(.*?)</\1>}m, '\2')
+    content.gsub!(%r{\n-\s*\n}m, '')
     content.gsub(/\n+/, '<br/>')
   end
 end
 
 # Main Confluence to Markdown class
+# @api public
 class Confluence2MD
   ##
   ## Initialize a new Confluence2MD object
@@ -1693,7 +1722,7 @@ end
 
 options = {
   clean_dirs: false,
-  clean_tables: false,
+  clean_tables: true,
   color: true,
   debug: false,
   fix_headers: true,
@@ -1743,8 +1772,8 @@ opt_parser = OptionParser.new do |opt|
     options[:fix_tables] = option
   end
 
-  opt.on('--clean-tables', 'Format converted tables, only valid with --convert-tables') do
-    options[:clean_tables] = true
+  opt.on('--[no-]clean-tables', 'Format converted tables, only valid with --convert-tables (default true)') do |option|
+    options[:clean_tables] = option
   end
 
   opt.on('--max-table-width WIDTH', 'If using --clean-tables, define a maximum table width') do |option|
@@ -1767,7 +1796,6 @@ opt_parser = OptionParser.new do |opt|
   opt.on('--[no-]source', 'Include an HTML comment with name of original HTML file (default false)') do |option|
     options[:include_source] = option
   end
-
 
   opt.on('--stdout', 'When operating on single file, output to STDOUT instead of filename') do
     options[:rename_files] = false

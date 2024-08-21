@@ -5,6 +5,7 @@
 ##
 module CLI
   # String helpers
+  # @api public
   class ::String
     ##
     ## Truncate a string at the end, accounting for message prefix

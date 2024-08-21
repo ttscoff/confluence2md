@@ -1,7 +1,13 @@
 # frozen_string_literal: true
 
-# C2MD module
+##
+## C2MD module
+##
+## @api public
+##
 module C2MD
-  # Version
-  VERSION = '1.0.25'
+  ##
+  ## Version
+  ##
+  VERSION = '1.0.26'
 end
