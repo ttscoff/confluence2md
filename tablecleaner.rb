@@ -3,7 +3,15 @@
 
 require 'optparse'
 
+# C2MD module
+# @api public
+module C2MD
+  # Version
+  VERSION = '1.0.25'
+end
+
 # Table formatting, cleans up tables in content
+# @api public
 class TableCleanup
   # Max cell width for formatting, defaults to 30
   attr_writer :max_cell_width
@@ -192,10 +200,6 @@ class TableCleanup
 
     @content
   end
-end
-
-module C2MD
-  VERSION = '1.0.25'
 end
 
 options = {

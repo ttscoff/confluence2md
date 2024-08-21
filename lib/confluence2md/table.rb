@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
 # Table formatting, cleans up tables in content
+# @api public
 class TableCleanup
   # Max cell width for formatting, defaults to 30
   attr_writer :max_cell_width
@@ -148,7 +149,7 @@ class TableCleanup
   def clean
     table_rx = /^(?ix)(?<table>
     (?<header>\|?(?:.*?\|)+.*?)\s*\n
-    (?<align>\|?(?:[:-]+\|)+[:-]*)\s*\n
+    ((?<align>\|?(?:[:-]+\|)+[:-]*)\s*\n)?
     (?<rows>(?:\|?(?:.*?\|)+.*?(?:\n|\Z))+))/
 
     @content.gsub!(/(\|?(?:.+?\|)+)\n\|\n/) do
@@ -162,7 +163,14 @@ class TableCleanup
     tables.each do |t|
       table = []
 
-      @alignment = parse_cells(t['align'].ensure_pipes).map do |cell|
+      if t['align'].nil?
+        cells = parse_cells(t['header'])
+        align = "|#{([':---'] * cells.count).join('|')}|"
+      else
+        align = t['align']
+      end
+
+      @alignment = parse_cells(align.ensure_pipes).map do |cell|
         if cell[0, 1] == ':' && cell[-1, 1] == ':'
           :center
         elsif cell[-1, 1] == ':'

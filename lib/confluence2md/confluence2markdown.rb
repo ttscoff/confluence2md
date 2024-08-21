@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
 # Main Confluence to Markdown class
+# @api public
 class Confluence2MD
   ##
   ## Initialize a new Confluence2MD object

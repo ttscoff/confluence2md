@@ -35,7 +35,7 @@ require_relative '../lib/confluence2md/confluence2markdown'
 
 options = {
   clean_dirs: false,
-  clean_tables: false,
+  clean_tables: true,
   color: true,
   debug: false,
   fix_headers: true,
@@ -85,8 +85,8 @@ opt_parser = OptionParser.new do |opt|
     options[:fix_tables] = option
   end
 
-  opt.on('--clean-tables', 'Format converted tables, only valid with --convert-tables') do
-    options[:clean_tables] = true
+  opt.on('--[no-]clean-tables', 'Format converted tables, only valid with --convert-tables (default true)') do |option|
+    options[:clean_tables] = option
   end
 
   opt.on('--max-table-width WIDTH', 'If using --clean-tables, define a maximum table width') do |option|
@@ -109,7 +109,6 @@ opt_parser = OptionParser.new do |opt|
   opt.on('--[no-]source', 'Include an HTML comment with name of original HTML file (default false)') do |option|
     options[:include_source] = option
   end
-
 
   opt.on('--stdout', 'When operating on single file, output to STDOUT instead of filename') do
     options[:rename_files] = false
