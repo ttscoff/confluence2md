@@ -627,9 +627,12 @@ module CLI
     end
 
     ##
-    ## Display alert level message. Ignored unless debugging is active
+    ## Display alert level message. Ignored unless debugging
+    ## is active
     ##
     ## @param      message  [String] The message
+    ##
+    ## @return     nil
     ##
     def debug(message)
       warn "#{kill_line}#{to_ansi(:white, :dark)}DEBUG: #{message.trunc}#{reset}\n" if @debug
@@ -639,6 +642,8 @@ module CLI
     ## Display error level message
     ##
     ## @param      message  [String] The message
+    ##
+    ## @return     nil
     ##
     def error(message)
       warn "\n#{to_ansi(:red, :bold)}ERROR: #{white}#{message.trunc}#{reset}\n"
