@@ -31,13 +31,13 @@ All version bumping and changelog updating handled by script below. Steps are ba
 ```run
 #!/usr/local/bin/fish
 
-rake merge
 rake bump
+rake merge
 set VER (rake ver)
 
 changelog -u
 git ar
-git commit --amend --no-edit
+# git commit --amend --no-edit
 git pull
 git push
 echo $VER > current_changes.md
