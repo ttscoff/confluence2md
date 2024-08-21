@@ -38,6 +38,7 @@ set VER (rake ver)
 changelog -u
 git ar
 git commit --amend --no-edit
+git pull
 git push
 echo $VER > current_changes.md
 echo >> current_changes.md

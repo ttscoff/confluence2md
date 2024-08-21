@@ -12,7 +12,7 @@ module C2MD
   ##
   ## Version
   ##
-  VERSION = '1.0.26'
+  VERSION = '1.0.27'
 end
 
 # Table formatting, cleans up tables in content
