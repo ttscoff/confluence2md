@@ -24,7 +24,7 @@ module C2MD
   ##
   ## Version
   ##
-  VERSION = '1.0.27'
+  VERSION = '1.0.29'
 end
 
 module TTY

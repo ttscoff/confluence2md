@@ -1,3 +1,16 @@
+### 1.0.29
+
+2024-08-21 10:44
+
+#### CHANGED
+
+- `--clean-tables` defaults to true and can be disabled with `--no-clean-tables`
+
+#### IMPROVED
+
+- Add missing header row to tables lacking one
+- Bold `<th>` elements in rows other than header row
+
 ### 1.0.28
 
 2024-08-21 10:41
