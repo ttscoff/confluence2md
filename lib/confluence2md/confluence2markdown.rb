@@ -28,6 +28,20 @@ class Confluence2MD
     CLI.coloring = options[:color] ? true : false
   end
 
+  ## Locate Pandoc executable
+  ##
+  ## @return     [String] path to pandoc executable
+  ##
+  def pandoc
+    @pandoc ||= begin
+      unless TTY::Which.exist?('pandoc')
+        CLI.error 'Pandoc not found. Please install pandoc and ensure it is in your PATH.'
+        Process.exit 1
+      end
+      TTY::Which.which('pandoc')
+    end
+  end
+
   ##
   ## Pandoc options
   ##
@@ -144,7 +158,7 @@ class Confluence2MD
 
       File.open(stripped, 'w') { |f| f.puts content }
 
-      res, err, status = Open3.capture3(%(pandoc #{pandoc_options('--extract-media markdown/images')} "#{stripped}"))
+      res, err, status = Open3.capture3(%(#{pandoc} #{pandoc_options("--extract-media markdown/images")} "#{stripped}"))
       unless status.success?
         CLI.error("Failed to run pandoc on #{File.basename(stripped)}")
         CLI.debug err
