@@ -1,3 +1,25 @@
+### 1.0.30
+
+2024-10-09 09:18
+
+#### CHANGED
+
+- `--clean-tables` defaults to true and can be disabled with `--no-clean-tables`
+
+#### NEW
+
+- Basic Gemfile to try making `bundle install` feasible
+
+#### IMPROVED
+
+- Add missing header row to tables lacking one
+- Bold `<th>` elements in rows other than header row
+- Better method of locating pandoc executable, OS agnostic
+
+#### FIXED
+
+- Table error handling
+
 ### 1.0.29
 
 2024-08-21 10:44
