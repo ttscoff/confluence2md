@@ -1,16 +1,23 @@
 # Confluence to Markdown
 
-This script is designed to run on a batch HTML export from Confluence to output a folder full of Markdown files.
+This script is designed to run on a batch HTML export from
+Confluence to output a folder full of Markdown files.
 
 ## Requirements
 
-- Ruby 3.x
+- Ruby 2.6+
 - Pandoc installed in $PATH (see [Installation](https://pandoc.org/installing.html))
+- [Nokogiri gem installed in current Ruby](#nokogiri)
+
+For easy installation of Ruby and Pandoc on macOS, check out
+[Homebrew](https://brew.sh). With Homebrew installation is
+as easy as `brew install ruby` and `brew install pandoc`.
 
 ## Usage
 
-Run in a folder full of HTML files, or pass a single HTML file as argument.
-If passing a single HTML file, optionally specify an output file as second argument.
+Run in a folder full of HTML files, or pass a single HTML
+file as argument. If passing a single HTML file, optionally
+specify an output file as second argument.
 
 Run `confluence_to_md.rb -h` to see available options.
 
@@ -40,3 +47,23 @@ CLI
     -h, --help                       Display help
     -v, --version                    Display version number
 ```
+
+### Nokogiri
+
+To install Nokogiri in the current gem, use:
+
+    gem install --user-install nokogiri
+
+If you're using a ruby version manager (asdf, rvm, rbenv,
+etc.) you probably have access to install gems without
+`--user-install` and can just use `gem install nokogiri`.
+
+If these commands cause an error or the script generates an
+error regarding nokogiri not being found, you may have to
+install using `sudo`. This isn't recommended but will
+probably solve the issue, especially if you're not running a
+Ruby version manager.
+
+    sudo gem install nokogiri
+
+Your system password will be required.
