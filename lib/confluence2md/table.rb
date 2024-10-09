@@ -44,6 +44,8 @@ class TableCleanup
     @widths = [0] * table.first.size
 
     table.each do |row|
+      next unless row
+
       row.each_with_index do |cell, col|
         if @widths[col]
           @widths[col] = cell.size if @widths[col] < cell.size
@@ -96,6 +98,8 @@ class TableCleanup
     idx = 0
     @max_cell_width = @max_table_width / row.count if @max_table_width
 
+    return unless row
+
     @string << '|'
     row.zip(@widths).each do |cell, width|
       width = @max_cell_width - 2 if width >= @max_cell_width
@@ -115,6 +119,8 @@ class TableCleanup
   ##
   def render_alignment
     @string << '|'
+    return unless @alignment
+
     @alignment.zip(@widths).each do |align, width|
       @string << ':' if align == :left
       width = @max_cell_width - 2 if width >= @max_cell_width
@@ -169,6 +175,8 @@ class TableCleanup
       else
         align = t['align']
       end
+
+      next unless parse_cells(align.ensure_pipes)
 
       @alignment = parse_cells(align.ensure_pipes).map do |cell|
         if cell[0, 1] == ':' && cell[-1, 1] == ':'
