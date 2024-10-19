@@ -1,10 +1,14 @@
 ### 1.0.31
 
-2024-10-09 09:22
+2024-10-19 10:32
 
-#### FIXED
+#### NEW
 
-- Table error handling
+- --no-escape option to remove unneeded character escaping
+
+#### IMPROVED
+
+- Remove double space after numeric list item digits
 
 ### 1.0.30
 
