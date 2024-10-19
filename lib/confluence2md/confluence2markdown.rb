@@ -12,6 +12,7 @@ class Confluence2MD
     defaults = {
       clean_dirs: false,
       clean_tables: false,
+      escape: true,
       fix_headers: true,
       fix_hierarchy: true,
       fix_tables: false,
@@ -21,7 +22,7 @@ class Confluence2MD
       rename_files: true,
       strip_emoji: true,
       strip_meta: false,
-      update_links: true
+      update_links: true,
     }
     @options = defaults.merge(options)
     CLI.debug = options[:debug] || false
@@ -34,12 +35,12 @@ class Confluence2MD
   ##
   def pandoc
     @pandoc ||= begin
-      unless TTY::Which.exist?('pandoc')
-        CLI.error 'Pandoc not found. Please install pandoc and ensure it is in your PATH.'
-        Process.exit 1
+        unless TTY::Which.exist?("pandoc")
+          CLI.error "Pandoc not found. Please install pandoc and ensure it is in your PATH."
+          Process.exit 1
+        end
+        TTY::Which.which("pandoc")
       end
-      TTY::Which.which('pandoc')
-    end
   end
 
   ##
@@ -53,19 +54,19 @@ class Confluence2MD
   def pandoc_options(additional)
     additional = [additional] if additional.is_a?(String)
     [
-      '--wrap=none',
-      '-f html',
-      '-t markdown_strict+rebase_relative_paths'
-    ].concat(additional).join(' ')
+      "--wrap=none",
+      "-f html",
+      "-t markdown_strict+rebase_relative_paths",
+    ].concat(additional).join(" ")
   end
 
   ##
   ## Copy attachments folder to markdown/
   ##
   def copy_attachments(markdown_dir)
-    target = File.expand_path('attachments')
+    target = File.expand_path("attachments")
 
-    target = File.expand_path('images/attachments') unless File.directory?(target)
+    target = File.expand_path("images/attachments") unless File.directory?(target)
     unless File.directory?(target)
       CLI.alert "Attachments directory not found #{target}"
       return
@@ -79,9 +80,9 @@ class Confluence2MD
   ## Flatten the attachments folder and move contents to images/
   ##
   def flatten_attachments
-    target = File.expand_path('attachments')
+    target = File.expand_path("attachments")
 
-    target = File.expand_path('images/attachments') unless File.directory?(target)
+    target = File.expand_path("images/attachments") unless File.directory?(target)
     unless File.directory?(target)
       CLI.alert "Attachments directory not found #{target}"
       return
@@ -89,13 +90,13 @@ class Confluence2MD
 
     copied = 0
 
-    Dir.glob('**/*', base: target).each do |file|
+    Dir.glob("**/*", base: target).each do |file|
       next unless file =~ /(png|jpe?g|gif|pdf|svg)$/
 
       file = File.join(target, file)
 
-      CLI.debug "Copying #{file} to #{File.join('markdown/images', File.basename(file))}"
-      FileUtils.cp file, File.join('markdown/images', File.basename(file))
+      CLI.debug "Copying #{file} to #{File.join("markdown/images", File.basename(file))}"
+      FileUtils.cp file, File.join("markdown/images", File.basename(file))
       copied += 1
     end
 
@@ -106,7 +107,7 @@ class Confluence2MD
   ## Delete images/images folder if it exists
   ##
   def clean_images_folder
-    folder = File.expand_path('images/images')
+    folder = File.expand_path("images/images")
     if File.directory?(folder)
       CLI.alert "Deleting images/images folder"
       FileUtils.rm_rf(folder)
@@ -119,8 +120,8 @@ class Confluence2MD
   ## extracted images.
   ##
   def all_html
-    stripped_dir = File.expand_path('stripped')
-    markdown_dir = File.expand_path('markdown')
+    stripped_dir = File.expand_path("stripped")
+    markdown_dir = File.expand_path("markdown")
 
     if @options[:clean_dirs]
       CLI.alert "Cleaning out markdown directories"
@@ -130,7 +131,7 @@ class Confluence2MD
       FileUtils.rm_rf(markdown_dir) if File.exist?(markdown_dir)
     end
     FileUtils.mkdir_p(stripped_dir)
-    FileUtils.mkdir_p(File.join(markdown_dir, 'images'))
+    FileUtils.mkdir_p(File.join(markdown_dir, "images"))
 
     if @options[:flatten_attachments]
       flatten_attachments
@@ -141,22 +142,22 @@ class Confluence2MD
     index_h = {}
     counter = 0
 
-    Dir.glob('*.html') do |html|
+    Dir.glob("*.html") do |html|
       counter += 1
       content = IO.read(html)
-      basename = File.basename(html, '.html')
-      stripped = File.join('stripped', "#{basename}.html")
+      basename = File.basename(html, ".html")
+      stripped = File.join("stripped", "#{basename}.html")
 
       markdown = if @options[:rename_files]
-                   title = content.match(%r{<title>(.*?)</title>}m)[1]
-                                  .sub(/^.*? : /, '').sub(/👓/, '').sub(/copy of /i, '')
-                   File.join('markdown', "#{title.slugify}.md")
-                 else
-                   File.join('markdown', "#{basename}.md")
-                 end
+          title = content.match(%r{<title>(.*?)</title>}m)[1]
+                         .sub(/^.*? : /, "").sub(/👓/, "").sub(/copy of /i, "")
+          File.join("markdown", "#{title.slugify}.md")
+        else
+          File.join("markdown", "#{basename}.md")
+        end
       content.prepare_content!(@options)
 
-      File.open(stripped, 'w') { |f| f.puts content }
+      File.open(stripped, "w") { |f| f.puts content }
 
       res, err, status = Open3.capture3(%(#{pandoc} #{pandoc_options("--extract-media markdown/images")} "#{stripped}"))
       unless status.success?
@@ -172,6 +173,7 @@ class Confluence2MD
       res.relative_paths!
       res.strip_comments!
       res.markdownify_images!
+      res.fix_numbered_list_indent!
       if @options[:clean_tables] && @options[:fix_tables]
         tc = TableCleanup.new(res)
         tc.max_cell_width = @options[:max_cell_width] if @options[:max_cell_width]
@@ -180,15 +182,16 @@ class Confluence2MD
       end
 
       res.repoint_flattened! if @options[:flatten_attachments]
+      res.unescape_markdown! unless @options[:escape]
 
       index_h[File.basename(html)] = File.basename(markdown)
-      File.open(markdown, 'w') { |f| f.puts res }
+      File.open(markdown, "w") { |f| f.puts res }
     end
 
     # Update local HTML links to Markdown filename
     update_links(index_h) if @options[:rename_files] && @options[:update_links]
     # Delete interim HTML directory
-    FileUtils.rm_f('stripped')
+    FileUtils.rm_f("stripped")
     clean_images_folder
     CLI.finished "Processed #{counter} files"
   end
@@ -199,14 +202,14 @@ class Confluence2MD
   ## @param      index_h  [Hash] dictionary of filename mappings { [html_filename] = markdown_filename }
   ##
   def update_links(index_h)
-    Dir.chdir('markdown')
-    Dir.glob('*.md').each do |file|
+    Dir.chdir("markdown")
+    Dir.glob("*.md").each do |file|
       content = IO.read(file)
       index_h.each do |html, markdown|
-        target = markdown.sub(/\.md$/, '.html')
+        target = markdown.sub(/\.md$/, ".html")
         content.gsub!(/(?<!Source: )#{html}/, target)
       end
-      File.open(file, 'w') { |f| f.puts content }
+      File.open(file, "w") { |f| f.puts content }
     end
   end
 
@@ -222,14 +225,14 @@ class Confluence2MD
     content = IO.read(html)
 
     markdown = if @options[:rename_files]
-                 title = content.match(%r{<title>(.*?)</title>}m)[1]
-                                .sub(/^.*? : /, '').sub(/👓/, '').sub(/copy of /i, '')
-                 "#{title.slugify}.md"
-               end
+        title = content.match(%r{<title>(.*?)</title>}m)[1]
+                       .sub(/^.*? : /, "").sub(/👓/, "").sub(/copy of /i, "")
+        "#{title.slugify}.md"
+      end
 
     content.prepare_content!(@options)
 
-    res, err, status = Open3.capture3(%(echo #{Shellwords.escape(content)} | pandoc #{pandoc_options('--extract-media images')}))
+    res, err, status = Open3.capture3(%(echo #{Shellwords.escape(content)} | pandoc #{pandoc_options("--extract-media images")}))
     unless status.success?
       CLI.error("Failed to run pandoc on #{File.basename(stripped)}")
       CLI.debug err
@@ -244,10 +247,12 @@ class Confluence2MD
       tc.max_table_width = @options[:max_table_width] if @options[:max_table_width]
       res = tc.clean
     end
+    res.fix_numbered_list_indent!
+    res.unescape_markdown! unless @options[:escape]
     return res.relative_paths.strip_comments unless markdown
 
     CLI.info "#{html.trunc_middle(60)} => #{markdown}"
-    File.open(markdown, 'w') { |f| f.puts res.relative_paths.strip_comments }
+    File.open(markdown, "w") { |f| f.puts res.relative_paths.strip_comments }
     nil
   end
 
@@ -262,9 +267,9 @@ class Confluence2MD
     content.prepare_content!(@options)
     content = Shellwords.escape(content)
 
-    res, err, status = Open3.capture3(%(echo #{content} | pandoc #{pandoc_options('--extract-media images')}))
+    res, err, status = Open3.capture3(%(echo #{content} | pandoc #{pandoc_options("--extract-media images")}))
     unless status.success?
-      CLI.error 'Failed to run pandoc on STDIN'
+      CLI.error "Failed to run pandoc on STDIN"
       CLI.debug err
       return nil
     end
@@ -276,11 +281,43 @@ class Confluence2MD
       tc.max_table_width = @options[:max_table_width] if @options[:max_table_width]
       res = tc.clean
     end
+    res.fix_numbered_list_indent!
+    res.unescape_markdown! unless @options[:escape]
     res.relative_paths.strip_comments
   end
 
   # string helpers
   class ::String
+    ##
+    ## Remove unnecessary backslashes from Markdown output
+    ##
+    ## @return     [String] cleaned up string
+    ##
+    def unescape_markdown
+      gsub(/\\([<>\\`*_\[\]#@|^~$\-"' l;])/, '\1')
+    end
+
+    ##
+    ## Compress whitespace after numbers in numbered lists
+    ##
+    def fix_numbered_list_indent
+      gsub(/(^[ \t]*\d\.)\s+/, '\1 ')
+    end
+
+    ##
+    ## Destructive version of #fix_numbered_list_indent
+    ## @see #fix_numbered_list_indent
+    def fix_numbered_list_indent!
+      replace fix_numbered_list_indent
+    end
+
+    ##
+    ## Destructive version of #unescape_markdown
+    ## @see #unescape_markdown
+    def unescape_markdown!
+      replace unescape_markdown
+    end
+
     ##
     ## Truncate string in middle
     ##
@@ -305,7 +342,7 @@ class Confluence2MD
     ## @return     [String] slug version
     ##
     def slugify
-      downcase.gsub(/[^a-z0-9]/, '-').gsub(/-+/, '-').gsub(/(^-|-$)/, '')
+      downcase.gsub(/[^a-z0-9]/, "-").gsub(/-+/, "-").gsub(/(^-|-$)/, "")
     end
 
     ##
@@ -314,23 +351,23 @@ class Confluence2MD
     ## @return     [String] string with emojis stripped
     ##
     def strip_emoji
-      text = dup.force_encoding('utf-8').encode
+      text = dup.force_encoding("utf-8").encode
 
       # symbols & pics
       regex = /[\u{1f300}-\u{1f5ff}]/
-      clean = text.gsub(regex, '')
+      clean = text.gsub(regex, "")
 
       # enclosed chars
       regex = /[\u{2500}-\u{2BEF}]/
-      clean = clean.gsub(regex, '')
+      clean = clean.gsub(regex, "")
 
       # emoticons
       regex = /[\u{1f600}-\u{1f64f}]/
-      clean = clean.gsub(regex, '')
+      clean = clean.gsub(regex, "")
 
       # dingbats
       regex = /[\u{2702}-\u{27b0}]/
-      clean = clean.gsub(regex, '')
+      clean = clean.gsub(regex, "")
     end
 
     ##
@@ -351,9 +388,9 @@ class Confluence2MD
     def strip_meta
       content = dup
       # Remove style tags and content
-      content.sub!(%r{<style.*?>.*?</style>}m, '')
+      content.sub!(%r{<style.*?>.*?</style>}m, "")
       # Remove TOC
-      content.gsub!(%r{<div class='toc-macro.*?</div>}m, '')
+      content.gsub!(%r{<div class='toc-macro.*?</div>}m, "")
 
       # Match breadcrumb-section
       breadcrumbs = content.match(%r{<div id="breadcrumb-section">(.*?)</div>}m)
@@ -362,21 +399,21 @@ class Confluence2MD
         page_title = breadcrumbs[1].match(%r{<li class="first">.*?<a href="index.html">(.*?)</a>}m)
         if page_title
           page_title = page_title[1]
-          content.sub!(breadcrumbs[0], '')
+          content.sub!(breadcrumbs[0], "")
           # find header
           header = content.match(%r{<div id="main-header">(.*?)</div>}m)
 
           old_title = header[1].match(%r{<span id="title-text">(.*?)</span>}m)[1].strip
           # Replace header with title we found as H1
-          content.sub!(header[0], "<h1>#{old_title.sub(/#{page_title} : /, '').sub(/copy of /i, '')}</h1>")
+          content.sub!(header[0], "<h1>#{old_title.sub(/#{page_title} : /, "").sub(/copy of /i, "")}</h1>")
         end
       end
 
       # Remove entire page-metadata block
-      content.sub!(%r{<div class="page-metadata">.*?</div>}m, '')
+      content.sub!(%r{<div class="page-metadata">.*?</div>}m, "")
       # Remove footer elements (attribution)
-      content.sub!(%r{<div id="footer-logo">.*?</div>}m, '')
-      content.sub!(%r{<div id="footer" role="contentinfo">.*?</div>}m, '')
+      content.sub!(%r{<div id="footer-logo">.*?</div>}m, "")
+      content.sub!(%r{<div id="footer" role="contentinfo">.*?</div>}m, "")
 
       content
     end
@@ -461,7 +498,7 @@ class Confluence2MD
       lines = split(/\n/)
       lines.delete_if { |l| l.strip.empty? }
       indent = lines[0].match(/^(\s*)\S/)[1]
-      indent ||= ''
+      indent ||= ""
 
       lines.each do |line|
         next if line.strip.empty?
@@ -482,7 +519,7 @@ class Confluence2MD
     def cleanup
       content = dup
       # Checkmarks
-      content.gsub!(%r{<span class="emoji">✔️</span>}, '&#10003;')
+      content.gsub!(%r{<span class="emoji">✔️</span>}, "&#10003;")
 
       # admonitions
 
@@ -498,32 +535,32 @@ class Confluence2MD
       end
 
       # delete div, section, and span tags (preserve content)
-      content.gsub!(%r{</?div.*?>}m, '')
-      content.gsub!(%r{</?section.*?>}m, '')
-      content.gsub!(%r{</?span.*?>}m, '')
+      content.gsub!(%r{</?div.*?>}m, "")
+      content.gsub!(%r{</?section.*?>}m, "")
+      content.gsub!(%r{</?span.*?>}m, "")
       # delete additional attributes on links (pandoc outputs weird syntax for attributes)
       content.gsub!(/<a.*?(href=".*?").*?>/, '<a \1>')
       # Delete icons
-      content.gsub!(/<img class="icon".*?>/m, '')
+      content.gsub!(/<img class="icon".*?>/m, "")
       # Convert embedded images to easily-matched syntax for later replacement
       content.gsub!(/<img.*class="confluence-embedded-image.*?".*?src="(.*?)".*?>/m, '%image: \1')
       # Rewrite img tags with just src, converting data-src to src
       content.gsub!(%r{<img.*? src="(.*?)".*?/?>}m, '<img src="\1">')
       content.gsub!(%r{<img.*? data-src="(.*?)".*?/?>}m, '<img src="\1">')
       # Remove confluenceTd from tables
-      content.gsub!(/ class="confluenceTd" /, '')
+      content.gsub!(/ class="confluenceTd" /, "")
       # Remove emphasis tags around line breaks
-      content.gsub!(%r{<(em|strong|b|u|i)><br/></\1>}m, '<br/>')
+      content.gsub!(%r{<(em|strong|b|u|i)><br/></\1>}m, "<br/>")
       # Remove empty emphasis tags
-      content.gsub!(%r{<(em|strong|b|u|i)>\s*?</\1>}m, '')
+      content.gsub!(%r{<(em|strong|b|u|i)>\s*?</\1>}m, "")
       # Convert <br></strong> to <strong><br>
-      content.gsub!(%r{<br/></strong>}m, '</strong><br/>')
+      content.gsub!(%r{<br/></strong>}m, "</strong><br/>")
       # Remove zero-width spaces and empty spans
-      content.gsub!(%r{<span>\u00A0</span>}, ' ')
-      content.gsub!(/\u00A0/, ' ')
-      content.gsub!(%r{<span> *</span>}, ' ')
+      content.gsub!(%r{<span>\u00A0</span>}, " ")
+      content.gsub!(/\u00A0/, " ")
+      content.gsub!(%r{<span> *</span>}, " ")
       # Remove squares from lists
-      content.gsub!(/■/, '')
+      content.gsub!(/■/, "")
       # remove empty tags
       # content.gsub!(%r{<(\S+).*?>([\n\s]*?)</\1>}, '\2')
       content
@@ -535,7 +572,7 @@ class Confluence2MD
     ## @return     [String] image paths replaced
     ##
     def relative_paths
-      gsub(%r{markdown/images/}, 'images/')
+      gsub(%r{markdown/images/}, "images/")
     end
 
     ##
@@ -555,7 +592,7 @@ class Confluence2MD
     ##
     def strip_comments
       # Remove empty comments and spans
-      gsub(/\n+ *<!-- *-->\n/, '').gsub(%r{</?span.*?>}m, '')
+      gsub(/\n+ *<!-- *-->\n/, "").gsub(%r{</?span.*?>}m, "")
     end
 
     ##
