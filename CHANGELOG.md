@@ -1,3 +1,12 @@
+### 1.0.35
+
+2024-10-22 12:25
+
+#### FIXED
+
+- Attempt to fix pandoc executable path location
+- Guess we just hope pandoc executable is in the PATH
+
 ### 1.0.34
 
 2024-10-22 12:20

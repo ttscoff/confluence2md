@@ -24,7 +24,7 @@ module C2MD
   ##
   ## Version
   ##
-  VERSION = "1.0.34"
+  VERSION = '1.0.35'
 end
 
 module TTY
@@ -1323,7 +1323,7 @@ class Confluence2MD
   def pandoc
     @pandoc ||= "pandoc"
 
-    ## This method causes errors on Windows
+    ## This method breaks on Windows
     # @pandoc ||= begin
     #     unless TTY::Which.exist?("pandoc")
     #       CLI.error "Pandoc not found. Please install pandoc and ensure it is in your PATH."
