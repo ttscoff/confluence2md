@@ -8,9 +8,9 @@
 class HTML2Markdown
   def initialize(str, baseurl = nil)
     begin
-      require 'nokogiri'
+      require "nokogiri"
     rescue LoadError
-      puts 'Nokogiri not installed. Please run `gem install --user-install nokogiri` or `sudo gem install nokogiri`.'
+      puts "Nokogiri not installed. Please run `gem install --user-install nokogiri` or `sudo gem install nokogiri`."
       Process.exit 1
     end
 
@@ -30,7 +30,7 @@ class HTML2Markdown
     i = 0
     "#{@markdown}\n\n" + @links.map do |link|
       i += 1
-      "[#{i}]: #{link[:href]}" + (link[:title] ? " (#{link[:title]})" : '')
+      "[#{i}]: #{link[:href]}" + (link[:title] ? " (#{link[:title]})" : "")
     end.join("\n")
   end
 
@@ -59,12 +59,12 @@ class HTML2Markdown
       begin
         link[:href] = URI.parse(link[:href])
       rescue StandardError
-        link[:href] = URI.parse('')
+        link[:href] = URI.parse("")
       end
       link[:href].scheme = @baseuri.scheme unless link[:href].scheme
       unless link[:href].opaque
         link[:href].host = @baseuri.host unless link[:href].host
-        link[:href].path = "#{@baseuri.path}/#{link[:href].path}" if link[:href].path.to_s[0] != '/'
+        link[:href].path = "#{@baseuri.path}/#{link[:href].path}" if link[:href].path.to_s[0] != "/"
       end
       link[:href] = link[:href].to_s
     end
@@ -89,12 +89,12 @@ class HTML2Markdown
     line = []
     str.split(/[ \t]+/).each do |word|
       line << word
-      if line.join(' ').length >= 74
-        out << line.join(' ') << " \n"
+      if line.join(" ").length >= 74
+        out << line.join(" ") << " \n"
         line = []
       end
     end
-    out << line.join(' ') + (str[-1..-1] =~ /[ \t\n]/ ? str[-1..-1] : '')
+    out << line.join(" ") + (str[-1..-1] =~ /[ \t\n]/ ? str[-1..-1] : "")
     out.join
   end
 
@@ -107,95 +107,95 @@ class HTML2Markdown
   ##
   def output_for(node)
     case node.name
-    when 'head', 'style', 'script'
-      ''
-    when 'br'
-      ' '
-    when 'p', 'div'
+    when "head", "style", "script"
+      ""
+    when "br"
+      " "
+    when "p", "div"
       "\n\n#{wrap(output_for_children(node))}\n\n"
-    when 'section', 'article'
+    when "section", "article"
       @section_level += 1
       o = "\n\n----\n\n#{output_for_children(node)}\n\n"
       @section_level -= 1
       o
     when /h(\d+)/
-      "\n\n#{'#' * (Regexp.last_match(1).to_i + @section_level)} #{output_for_children(node)}\n\n"
-    when 'blockquote'
+      "\n\n#{"#" * (Regexp.last_match(1).to_i + @section_level)} #{output_for_children(node)}\n\n"
+    when "blockquote"
       @section_level += 1
       o = "\n\n> #{wrap(output_for_children(node)).gsub(/\n/, "\n> ")}\n\n".gsub(/> \n(> \n)+/, "> \n")
       @section_level -= 1
       o
-    when 'ul'
+    when "ul"
       "\n\n" + node.children.map do |el|
-        next if el.name == 'text' || el.text.strip.empty?
+        next if el.name == "text" || el.text.strip.empty?
 
         "- #{output_for_children(el).gsub(/^(\t)|(    )/, "\t\t").gsub(/^>/, "\t>")}\n"
       end.join + "\n\n"
-    when 'ol'
+    when "ol"
       i = 0
       "\n\n" + node.children.map { |el|
-        next if el.name == 'text' || el.text.strip.empty?
+        next if el.name == "text" || el.text.strip.empty?
 
         i += 1
         "#{i}. #{output_for_children(el).gsub(/^(\t)|(    )/, "\t\t").gsub(/^>/, "\t>")}\n"
       }.join + "\n\n"
-    when 'code'
+    when "code"
       block = "\t#{wrap(output_for_children(node)).gsub(/\n/, "\n\t")}"
       if block.count("\n").zero?
         "`#{output_for_children(node)}`"
       else
         block
       end
-    when 'hr'
+    when "hr"
       "\n\n----\n\n"
-    when 'a', 'link'
-      link = { href: node['href'], title: node['title'] }
-      "[#{output_for_children(node).gsub("\n", ' ')}][#{add_link(link)}]"
-    when 'img'
-      link = { href: node['src'], title: node['title'] }
-      "![#{node['alt']}][#{add_link(link)}]"
-    when 'video', 'audio', 'embed'
-      link = { href: node['src'], title: node['title'] }
-      "[#{output_for_children(node).gsub("\n", ' ')}][#{add_link(link)}]"
-    when 'object'
-      link = { href: node['data'], title: node['title'] }
-      "[#{output_for_children(node).gsub("\n", ' ')}][#{add_link(link)}]"
-    when 'i', 'em', 'u'
+    when "a", "link"
+      link = { href: node["href"], title: node["title"] }
+      "[#{output_for_children(node).gsub("\n", " ")}][#{add_link(link)}]"
+    when "img"
+      link = { href: node["src"], title: node["title"] }
+      "![#{node["alt"]}][#{add_link(link)}]"
+    when "video", "audio", "embed"
+      link = { href: node["src"], title: node["title"] }
+      "[#{output_for_children(node).gsub("\n", " ")}][#{add_link(link)}]"
+    when "object"
+      link = { href: node["data"], title: node["title"] }
+      "[#{output_for_children(node).gsub("\n", " ")}][#{add_link(link)}]"
+    when "i", "em", "u"
       "_#{node.text.sub(/(\s*)?$/, '_\1')}"
-    when 'b', 'strong'
+    when "b", "strong"
       "**#{node.text.sub(/(\s*)?$/, '**\1')}"
-    # Tables are not part of Markdown, so we output WikiCreole
-    when 'table'
+      # Tables are not part of Markdown, so we output WikiCreole
+    when "table"
       @first_row = true
       output_for_children(node)
-    when 'tr'
-      ths = node.children.select { |c| c.name == 'th' }
-      tds = node.children.select { |c| c.name == 'td' }
+    when "tr"
+      ths = node.children.select { |c| c.name == "th" }
+      tds = node.children.select { |c| c.name == "td" }
       if ths.count > 1 && tds.count.zero?
-        output = node.children.select { |c| c.name == 'th' }
+        output = node.children.select { |c| c.name == "th" }
                      .map { |c| output_for(c) }
-                     .join.gsub(/\|\|/, '|')
-        align = node.children.select { |c| c.name == 'th' }
-                    .map { ':---|' }
+                     .join.gsub(/\|\|/, "|")
+        align = node.children.select { |c| c.name == "th" }
+                    .map { ":---|" }
                     .join
         output = "#{output}\n|#{align}"
       else
-        els = node.children.select { |c| c.name == 'th' || c.name == 'td' }
-        output = els.map { |cell| output_for(cell) }.join.gsub(/\|\|/, '|')
+        els = node.children.select { |c| c.name == "th" || c.name == "td" }
+        output = els.map { |cell| output_for(cell) }.join.gsub(/\|\|/, "|")
       end
       @first_row = false
       output
-    when 'th', 'td'
-      if node.name == 'th' && !@first_row
+    when "th", "td"
+      if node.name == "th" && !@first_row
         "|**#{clean_cell(output_for_children(node).strip)}**|"
       else
         "|#{clean_cell(output_for_children(node).strip)}|"
       end
-    when 'text'
+    when "text"
       # Sometimes Nokogiri lies. Force the encoding back to what we know it is
       if (c = node.content.force_encoding(@encoding)) =~ /\S/
-        c.gsub(/\n\n+/, '<$PreserveDouble$>')
-         .gsub(/\s+/, ' ')
+        c.gsub(/\n\n+/, "<$PreserveDouble$>")
+         .gsub(/\s+/, " ")
          .gsub(/<\$PreserveDouble\$>/, "\n\n")
       else
         c
@@ -213,10 +213,10 @@ class HTML2Markdown
   ## @return     [String] the cleaned content
   ##
   def clean_cell(content)
-    content.gsub!(%r{</?p>}, '')
+    content.gsub!(%r{</?p>}, "")
     content.gsub!(%r{<li>(.*?)</li>}m, "- \\1\n")
     content.gsub!(%r{<(\w+)(?: .*?)?>(.*?)</\1>}m, '\2')
-    content.gsub!(%r{\n-\s*\n}m, '')
-    content.gsub(/\n+/, '<br/>')
+    content.gsub!(%r{\n-\s*\n}m, "")
+    content.gsub(/\n+/, "<br/>")
   end
 end

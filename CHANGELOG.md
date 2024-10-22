@@ -1,3 +1,15 @@
+### 1.0.32
+
+2024-10-19 10:33
+
+#### NEW
+
+- --no-escape option to remove unneeded character escaping
+
+#### IMPROVED
+
+- Remove double space after numeric list item digits
+
 ### 1.0.31
 
 2024-10-19 10:32

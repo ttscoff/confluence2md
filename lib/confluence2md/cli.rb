@@ -46,7 +46,7 @@ module CLI
       yellow: 33,
       cyan: 36,
       white: 37,
-      default: 39
+      default: 39,
     }.freeze
 
     ## Basic ANSI style codes
@@ -59,7 +59,7 @@ module CLI
       underscore: 4,
       blink: 5,
       rapid_blink: 6,
-      negative: 7
+      negative: 7,
     }.freeze
 
     ##
@@ -69,7 +69,7 @@ module CLI
     ## @param      style  [Array<Symbol>] The style, :bold, :dark, etc.
     ##
     def to_ansi(color, style = [:normal])
-      return '' unless @coloring
+      return "" unless @coloring
 
       style = [style] unless style.is_a?(Array)
       prefix = style.map { |s| "#{FORMATS[s.to_sym]};" }.join

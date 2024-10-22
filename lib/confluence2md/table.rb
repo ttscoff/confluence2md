@@ -17,7 +17,7 @@ class TableCleanup
   ## @param      options  [Hash] The options
   ##
   def initialize(content = nil, options = nil)
-    @content = content ? content : ''
+    @content = content ? content : ""
     @max_cell_width = options && options[:max_cell_width] ? options[:max_cell_width] : 30
     @max_table_width = options && options[:max_table_width] ? options[:max_table_width] : nil
   end
@@ -30,7 +30,7 @@ class TableCleanup
   ## @return [Array] array of cell strings
   ##
   def parse_cells(row)
-    row.split('|').map(&:strip)[1..-1]
+    row.split("|").map(&:strip)[1..-1]
   end
 
   ##
@@ -79,11 +79,11 @@ class TableCleanup
   def align(alignment, string, width)
     case alignment
     when :left
-      string.ljust(width, ' ')
+      string.ljust(width, " ")
     when :right
-      string.rjust(width, ' ')
+      string.rjust(width, " ")
     when :center
-      string.center(width, ' ')
+      string.center(width, " ")
     end
   end
 
@@ -100,13 +100,13 @@ class TableCleanup
 
     return unless row
 
-    @string << '|'
+    @string << "|"
     row.zip(@widths).each do |cell, width|
       width = @max_cell_width - 2 if width >= @max_cell_width
       if width.zero?
-        @string << '|'
+        @string << "|"
       else
-        content = @alignment ? align(@alignment[idx], cell, width) : cell.ljust(width, ' ')
+        content = @alignment ? align(@alignment[idx], cell, width) : cell.ljust(width, " ")
         @string << " #{content} |"
       end
       idx += 1
@@ -118,15 +118,15 @@ class TableCleanup
   ## Render the alignment row
   ##
   def render_alignment
-    @string << '|'
+    @string << "|"
     return unless @alignment
 
     @alignment.zip(@widths).each do |align, width|
-      @string << ':' if align == :left
+      @string << ":" if align == :left
       width = @max_cell_width - 2 if width >= @max_cell_width
-      @string << '-' * (width + (align == :center ? 2 : 1))
-      @string << ':' if align == :right
-      @string << '|'
+      @string << "-" * (width + (align == :center ? 2 : 1))
+      @string << ":" if align == :right
+      @string << "|"
     end
     @string << "\n"
   end
@@ -161,7 +161,7 @@ class TableCleanup
     @content.gsub!(/(\|?(?:.+?\|)+)\n\|\n/) do
       m = Regexp.last_match
       cells = parse_cells(m[1]).count
-      "#{m[1]}\n#{'|' * cells}\n"
+      "#{m[1]}\n#{"|" * cells}\n"
     end
 
     tables = @content.to_enum(:scan, table_rx).map { Regexp.last_match }
@@ -169,26 +169,26 @@ class TableCleanup
     tables.each do |t|
       table = []
 
-      if t['align'].nil?
-        cells = parse_cells(t['header'])
-        align = "|#{([':---'] * cells.count).join('|')}|"
+      if t["align"].nil?
+        cells = parse_cells(t["header"])
+        align = "|#{([":---"] * cells.count).join("|")}|"
       else
-        align = t['align']
+        align = t["align"]
       end
 
       next unless parse_cells(align.ensure_pipes)
 
       @alignment = parse_cells(align.ensure_pipes).map do |cell|
-        if cell[0, 1] == ':' && cell[-1, 1] == ':'
+        if cell[0, 1] == ":" && cell[-1, 1] == ":"
           :center
-        elsif cell[-1, 1] == ':'
+        elsif cell[-1, 1] == ":"
           :right
         else
           :left
         end
       end
 
-      lines = t['table'].split(/\n/)
+      lines = t["table"].split(/\n/)
       lines.delete_if(&:alignment?)
 
       lines.each do |row|
@@ -200,7 +200,7 @@ class TableCleanup
         table << cells
       end
 
-      @content.sub!(/#{Regexp.escape(t['table'])}/, "#{build_table(table)}\n")
+      @content.sub!(/#{Regexp.escape(t["table"])}/, "#{build_table(table)}\n")
     end
 
     @content

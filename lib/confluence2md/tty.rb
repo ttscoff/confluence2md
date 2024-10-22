@@ -23,7 +23,7 @@ module TTY
       private_class_method(name)
     end
 
-    case RUBY_CONFIG['host_os'] || ::RUBY_PLATFORM
+    case RUBY_CONFIG["host_os"] || ::RUBY_PLATFORM
     when /mswin|msys|mingw|cygwin|bccwin|wince|emc/
       # Detect Windows system
       #
@@ -45,7 +45,7 @@ module TTY
     end
     module_function :windows?
 
-    case RUBY_CONFIG['ruby_install_name'] || ::RUBY_ENGINE
+    case RUBY_CONFIG["ruby_install_name"] || ::RUBY_ENGINE
     when /jruby/
       # Detect JRuby
       #
@@ -126,6 +126,7 @@ module TTY
         size_from_ansicon ||
         size_from_default
     end
+
     module_function :size
 
     # Detect terminal screen width
@@ -139,6 +140,7 @@ module TTY
     def width
       size[1]
     end
+
     module_function :width
 
     alias columns width
@@ -157,6 +159,7 @@ module TTY
     def height
       size[0]
     end
+
     module_function :height
 
     alias rows height
@@ -172,6 +175,7 @@ module TTY
     def size_from_default
       DEFAULT_SIZE
     end
+
     module_function :size_from_default
 
     if windows?
@@ -192,16 +196,18 @@ module TTY
       #
       # @api private
       def size_from_win_api(verbose: false)
-        require 'fiddle' unless defined?(Fiddle)
+        require "fiddle" unless defined?(Fiddle)
 
-        kernel32 = Fiddle::Handle.new('kernel32')
+        kernel32 = Fiddle::Handle.new("kernel32")
         get_std_handle = Fiddle::Function.new(
-          kernel32['GetStdHandle'], [-Fiddle::TYPE_INT], Fiddle::TYPE_INT)
+          kernel32["GetStdHandle"], [-Fiddle::TYPE_INT], Fiddle::TYPE_INT
+        )
         get_console_buffer_info = Fiddle::Function.new(
-          kernel32['GetConsoleScreenBufferInfo'],
-          [Fiddle::TYPE_LONG, Fiddle::TYPE_VOIDP], Fiddle::TYPE_INT)
+          kernel32["GetConsoleScreenBufferInfo"],
+          [Fiddle::TYPE_LONG, Fiddle::TYPE_VOIDP], Fiddle::TYPE_INT
+        )
 
-        format = 'SSSSSssssSS'
+        format = "SSSSSssssSS"
         buffer = ([0] * format.size).pack(format)
         stdout_handle = get_std_handle.(STDOUT_HANDLE)
 
@@ -210,7 +216,7 @@ module TTY
         size = [bottom - top + 1, right - left + 1]
         size if nonzero_column?(size[1] - 1)
       rescue LoadError
-        warn 'no native fiddle module found' if verbose
+        warn "no native fiddle module found" if verbose
       rescue Fiddle::DLError
         # non windows platform or no kernel32 lib
       end
@@ -232,14 +238,14 @@ module TTY
       #
       # @api private
       def size_from_java(verbose: false)
-        require 'java'
+        require "java"
 
-        java_import 'jline.TerminalFactory'
+        java_import "jline.TerminalFactory"
         terminal = TerminalFactory.get
         size = [terminal.get_height, terminal.get_width]
         size if nonzero_column?(size[1])
       rescue
-        warn 'failed to import java terminal package' if verbose
+        warn "failed to import java terminal package" if verbose
       end
     else
       def size_from_java(verbose: false)
@@ -264,7 +270,7 @@ module TTY
     def size_from_io_console(verbose: false)
       return unless output.tty?
 
-      require 'io/console' unless IO.method_defined?(:winsize)
+      require "io/console" unless IO.method_defined?(:winsize)
       return unless output.respond_to?(:winsize)
 
       size = output.winsize
@@ -272,8 +278,9 @@ module TTY
     rescue Errno::EOPNOTSUPP
       # no support for winsize on output
     rescue LoadError
-      warn 'no native io/console support or io-console gem' if verbose
+      warn "no native io/console support or io-console gem" if verbose
     end
+
     module_function :size_from_io_console
 
     if !jruby? && output.respond_to?(:ioctl)
@@ -303,7 +310,7 @@ module TTY
       # @return [String]
       #
       # @api private
-      TIOCGWINSZ_BUF_FMT = 'SSSS'
+      TIOCGWINSZ_BUF_FMT = "SSSS"
       private_constant :TIOCGWINSZ_BUF_FMT
 
       # The ioctl window size buffer length
@@ -326,7 +333,6 @@ module TTY
         if ioctl?(TIOCGWINSZ, buffer) ||
            ioctl?(TIOCGWINSZ_PPC, buffer) ||
            ioctl?(TIOCGWINSZ_SOL, buffer)
-
           rows, cols, = buffer.unpack(TIOCGWINSZ_BUF_FMT)
           [rows, cols] if nonzero_column?(cols)
         end
@@ -350,6 +356,7 @@ module TTY
       rescue SystemCallError
         false
       end
+
       module_function :ioctl?
     else
       def size_from_ioctl; nil end
@@ -368,15 +375,16 @@ module TTY
     def size_from_readline(verbose: false)
       return unless output.tty?
 
-      require 'readline' unless defined?(::Readline)
+      require "readline" unless defined?(::Readline)
       return unless ::Readline.respond_to?(:get_screen_size)
 
       size = ::Readline.get_screen_size
       size if nonzero_column?(size[1])
     rescue LoadError
-      warn 'no readline gem' if verbose
+      warn "no readline gem" if verbose
     rescue NotImplementedError
     end
+
     module_function :size_from_readline
 
     # Detect terminal screen size from tput
@@ -386,14 +394,15 @@ module TTY
     #
     # @api private
     def size_from_tput
-      return unless output.tty? && command_exist?('tput')
+      return unless output.tty? && command_exist?("tput")
 
-      lines = run_command('tput', 'lines')
+      lines = run_command("tput", "lines")
       return unless lines
 
-      cols = run_command('tput', 'cols')
+      cols = run_command("tput", "cols")
       [lines.to_i, cols.to_i] if nonzero_column?(cols)
     end
+
     module_function :size_from_tput
 
     # Detect terminal screen size from stty
@@ -403,14 +412,15 @@ module TTY
     #
     # @api private
     def size_from_stty
-      return unless output.tty? && command_exist?('stty')
+      return unless output.tty? && command_exist?("stty")
 
-      out = run_command('stty', 'size')
+      out = run_command("stty", "size")
       return unless out
 
       size = out.split.map(&:to_i)
       size if nonzero_column?(size[1])
     end
+
     module_function :size_from_stty
 
     # Detect terminal screen size from environment variables
@@ -425,11 +435,12 @@ module TTY
     #
     # @api private
     def size_from_env
-      return unless env['COLUMNS'] =~ /^\d+$/
+      return unless env["COLUMNS"] =~ /^\d+$/
 
-      size = [(env['LINES'] || env['ROWS']).to_i, env['COLUMNS'].to_i]
+      size = [(env["LINES"] || env["ROWS"]).to_i, env["COLUMNS"].to_i]
       size if nonzero_column?(size[1])
     end
+
     module_function :size_from_env
 
     # Detect terminal screen size from the ANSICON environment variable
@@ -439,11 +450,12 @@ module TTY
     #
     # @api private
     def size_from_ansicon
-      return unless env['ANSICON'] =~ /\((.*)x(.*)\)/
+      return unless env["ANSICON"] =~ /\((.*)x(.*)\)/
 
       size = [::Regexp.last_match(2).to_i, ::Regexp.last_match(1).to_i]
       size if nonzero_column?(size[1])
     end
+
     module_function :size_from_ansicon
 
     # Check if a command exists
@@ -455,13 +467,14 @@ module TTY
     #
     # @api private
     def command_exist?(command)
-      exts = env.fetch('PATHEXT', '').split(::File::PATH_SEPARATOR)
-      env.fetch('PATH', '').split(::File::PATH_SEPARATOR).any? do |dir|
+      exts = env.fetch("PATHEXT", "").split(::File::PATH_SEPARATOR)
+      env.fetch("PATH", "").split(::File::PATH_SEPARATOR).any? do |dir|
         file = ::File.join(dir, command)
         ::File.exist?(file) ||
           exts.any? { |ext| ::File.exist?("#{file}#{ext}") }
       end
     end
+
     private_module_function :command_exist?
 
     # Run command capturing the standard output
@@ -474,10 +487,11 @@ module TTY
     #
     # @api private
     def run_command(*args)
-      %x(#{args.join(' ')})
+      %x(#{args.join(" ")})
     rescue IOError, SystemCallError
       nil
     end
+
     private_module_function :run_command
 
     # Check if a number is non-zero
@@ -491,6 +505,7 @@ module TTY
     def nonzero_column?(column)
       column.to_i > 0
     end
+
     private_module_function :nonzero_column?
   end
 
@@ -538,6 +553,7 @@ module TTY
       end
       nil
     end
+
     module_function :which
 
     # Check if executable exists in the path
@@ -554,6 +570,7 @@ module TTY
     def exist?(cmd, paths: search_paths)
       !which(cmd, paths: paths).nil?
     end
+
     module_function :exist?
 
     # Find default system paths
@@ -571,12 +588,13 @@ module TTY
     # @api private
     def search_paths(path = ENV["PATH"])
       paths = if path && !path.empty?
-                path.split(::File::PATH_SEPARATOR)
-              else
-                %w[/usr/local/bin /usr/ucb /usr/bin /bin]
-              end
+          path.split(::File::PATH_SEPARATOR)
+        else
+          %w[/usr/local/bin /usr/ucb /usr/bin /bin]
+        end
       paths.select(&Dir.method(:exist?))
     end
+
     module_function :search_paths
 
     # All possible file extensions
@@ -597,6 +615,7 @@ module TTY
 
       path_ext.split(::File::PATH_SEPARATOR).select { |part| part.include?(".") }
     end
+
     module_function :extensions
 
     # Determines if filename is an executable file
@@ -621,6 +640,7 @@ module TTY
       path ||= filename
       ::File.file?(path) && ::File.executable?(path)
     end
+
     module_function :executable_file?
 
     # Check if command itself has executable extension
@@ -641,6 +661,7 @@ module TTY
 
       extensions.any? { |ext| extension.casecmp(ext).zero? }
     end
+
     module_function :file_with_exec_ext?
 
     # Check if executable file is part of absolute/relative path
@@ -654,6 +675,7 @@ module TTY
     def file_with_path?(cmd)
       ::File.expand_path(cmd) == cmd
     end
+
     module_function :file_with_path?
   end # Which
 end # TTY
