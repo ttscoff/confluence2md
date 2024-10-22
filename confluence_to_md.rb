@@ -24,7 +24,7 @@ module C2MD
   ##
   ## Version
   ##
-  VERSION = "1.0.33"
+  VERSION = "1.0.34"
 end
 
 module TTY
@@ -1321,13 +1321,16 @@ class Confluence2MD
   ## @return     [String] path to pandoc executable
   ##
   def pandoc
-    @pandoc ||= begin
-        unless TTY::Which.exist?("pandoc")
-          CLI.error "Pandoc not found. Please install pandoc and ensure it is in your PATH."
-          Process.exit 1
-        end
-        TTY::Which.which("pandoc")
-      end
+    @pandoc ||= "pandoc"
+
+    ## This method causes errors on Windows
+    # @pandoc ||= begin
+    #     unless TTY::Which.exist?("pandoc")
+    #       CLI.error "Pandoc not found. Please install pandoc and ensure it is in your PATH."
+    #       Process.exit 1
+    #     end
+    #     TTY::Which.which("pandoc")
+    #   end
   end
 
   ##
@@ -1446,7 +1449,7 @@ class Confluence2MD
 
       File.open(stripped, "w") { |f| f.puts content }
 
-      res, err, status = Open3.capture3(%(#{Shellwords.escape(pandoc)} #{pandoc_options("--extract-media markdown/images")} "#{stripped}"))
+      res, err, status = Open3.capture3(%(#{pandoc} #{pandoc_options("--extract-media markdown/images")} "#{stripped}"))
       unless status.success?
         CLI.error("Failed to run pandoc on #{File.basename(stripped)}")
         CLI.debug err
@@ -1519,7 +1522,7 @@ class Confluence2MD
 
     content.prepare_content!(@options)
 
-    res, err, status = Open3.capture3(%(echo #{Shellwords.escape(content)} | #{Shellwords.escape(pandoc)} #{pandoc_options("--extract-media images")}))
+    res, err, status = Open3.capture3(%(echo #{Shellwords.escape(content)} | pandoc #{pandoc_options("--extract-media images")}))
     unless status.success?
       CLI.error("Failed to run pandoc on #{File.basename(stripped)}")
       CLI.debug err
@@ -1554,7 +1557,7 @@ class Confluence2MD
     content.prepare_content!(@options)
     content = Shellwords.escape(content)
 
-    res, err, status = Open3.capture3(%(echo #{content} | #{Shellwords.escape(pandoc)} #{pandoc_options("--extract-media images")}))
+    res, err, status = Open3.capture3(%(echo #{content} | pandoc #{pandoc_options("--extract-media images")}))
     unless status.success?
       CLI.error "Failed to run pandoc on STDIN"
       CLI.debug err

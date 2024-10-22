@@ -1,3 +1,12 @@
+### 1.0.34
+
+2024-10-22 12:20
+
+#### FIXED
+
+- Fix merge script
+- Attempt to fix pandoc executable path location
+
 ### 1.0.33
 
 2024-10-22 10:26
