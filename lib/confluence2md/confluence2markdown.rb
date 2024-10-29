@@ -34,13 +34,16 @@ class Confluence2MD
   ## @return     [String] path to pandoc executable
   ##
   def pandoc
-    @pandoc ||= begin
-        unless TTY::Which.exist?("pandoc")
-          CLI.error "Pandoc not found. Please install pandoc and ensure it is in your PATH."
-          Process.exit 1
-        end
-        TTY::Which.which("pandoc")
-      end
+    @pandoc ||= "pandoc"
+
+    ## This method breaks on Windows
+    # @pandoc ||= begin
+    #     unless TTY::Which.exist?("pandoc")
+    #       CLI.error "Pandoc not found. Please install pandoc and ensure it is in your PATH."
+    #       Process.exit 1
+    #     end
+    #     TTY::Which.which("pandoc")
+    #   end
   end
 
   ##

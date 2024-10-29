@@ -1,3 +1,41 @@
+### 1.0.35
+
+2024-10-22 12:25
+
+#### FIXED
+
+- Attempt to fix pandoc executable path location
+- Guess we just hope pandoc executable is in the PATH
+
+### 1.0.34
+
+2024-10-22 12:20
+
+#### FIXED
+
+- Fix merge script
+- Attempt to fix pandoc executable path location
+
+### 1.0.33
+
+2024-10-22 10:26
+
+#### FIXED
+
+- Fix merge script
+
+### 1.0.32
+
+2024-10-19 10:33
+
+#### NEW
+
+- --no-escape option to remove unneeded character escaping
+
+#### IMPROVED
+
+- Remove double space after numeric list item digits
+
 ### 1.0.31
 
 2024-10-19 10:32
