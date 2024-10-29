@@ -12,7 +12,7 @@ class Confluence2MD
     defaults = {
       clean_dirs: false,
       clean_tables: false,
-      escape: true,
+      escape: false,
       fix_headers: true,
       fix_hierarchy: true,
       fix_tables: false,

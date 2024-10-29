@@ -38,7 +38,7 @@ options = {
   clean_tables: true,
   color: true,
   debug: false,
-  escape: true,
+  escape: false,
   fix_headers: true,
   fix_hierarchy: true,
   fix_tables: false,
@@ -70,7 +70,7 @@ opt_parser = OptionParser.new do |opt|
     options[:strip_emoji] = option
   end
 
-  opt.on("--[no-]escape", "Escape special characters (default true)") do |option|
+  opt.on("--[no-]escape", "Escape special characters (default false)") do |option|
     options[:escape] = option
   end
 
