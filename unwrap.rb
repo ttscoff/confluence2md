@@ -32,8 +32,17 @@ optparse.parse!
 class ::String
   def unwrap_ps
     input = dup
-    rx = /(?i-m)(.*?\S\n *(?!\n|\* |\+ |- ))+/
-    input.gsub!(rx) { |m| m.gsub(/\n/, ' ').gsub(/ +/, ' ') }
+
+    # Unwrap paragraphs respecting list items
+    rx = /(.*?\S\r?\n[\t ]*(?!\s*(\r?\n|\* |\+ |- |\d+\. )))+/
+    puts input =~ rx ? true : false
+    input.gsub!(rx) do |m|
+      m.gsub(/\n/, ' ')
+       .gsub(/\s{2,}/) do
+         t = Regexp.last_match
+         t.post_match[0] =~ /[-*+]/ ? t : ' '
+       end
+    end
     input
   end
 end
@@ -49,6 +58,7 @@ if ARGV.count.positive?
       outfile = file
       outfile = file.sub(/(\.\w+)?$/, '.unwrapped\1') unless options[:overwrite]
       File.open(outfile, 'w') { |f| f.write(output) }
+      warn "Unwrapped content written to #{outfile}"
     end
   end
 else
