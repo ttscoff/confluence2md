@@ -40,7 +40,7 @@ class ::String
       m.gsub(/\n/, ' ')
        .gsub(/\s{2,}/) do
          t = Regexp.last_match
-         t.post_match[0] =~ /[-*+]/ ? t : ' '
+         t.post_match[0] =~ /([-*+] |\d+\. )/ ? t : ' '
        end
     end
     input
