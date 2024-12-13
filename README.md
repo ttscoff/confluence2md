@@ -3,6 +3,8 @@
 This script is designed to run on a batch HTML export from
 Confluence to output a folder full of Markdown files.
 
+This folder also contains standalone scripts for table cleanup and paragraph unwrapping.
+
 ## Requirements
 
 - Ruby 2.6+
@@ -67,3 +69,35 @@ Ruby version manager.
     sudo gem install nokogiri
 
 Your system password will be required.
+
+## Standalone Scripts
+
+### Table cleanup
+
+```
+Run with file arguments (Markdown containing tables). Cleaned output will be saved to
+[FILENAME]-cleaned.md unless -o option is provided.
+
+Usage: tablecleaner.rb [OPTIONS] [FILE [FILE]]
+
+Options:
+    -o, --output FILENAME            Save output to specified file
+    -t, --max-table-width WIDTH      Define a maximum table width
+    -c, --max-cell-width WIDTH       Define a maximum cell width. Overriden by --max_table_width
+        --stdout                     When operating on single file, output to STDOUT instead of filename
+    -h, --help                       Display help
+    -v, --version                    Display version number
+```
+
+### Paragraph unwrapping
+
+This script takes filenames as arguments or input passed on STDIN and unwraps hard-wrapped lines, respecting list items. Do not run it on Markdown containing code blocks.
+
+```
+Usage: unwrap.rb [options] [file1 file2 ...]
+Pass input via stdin or as file argument(s).
+Options:
+    -o, --overwrite                  Write unwrapped output to files in place (otherwise creates a separate *.unwrapped[.ext] file)
+    -s, --stdout                     Write unwrapped output to stdout, even when passing file arguments
+    -h, --help                       Display this screen
+```
