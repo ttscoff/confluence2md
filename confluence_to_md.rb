@@ -1986,6 +1986,10 @@ options = {
   update_links: true,
 }
 
+# Parse command line options
+# @api public
+# @param      options  [Hash] The options
+# @return     [Hash]   The options
 opt_parser = OptionParser.new do |opt|
   opt.banner = <<~EOBANNER
     Run in a folder full of HTML files, or pass a single HTML file as argument.
